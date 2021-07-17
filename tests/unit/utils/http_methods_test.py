@@ -1,4 +1,4 @@
-from src.utils.http_methods import *
+from src.utils.http.http_methods import *
 
 def test_get_methods_list_return_list_with_all_defined_http_methods():
     actual = get_methods_list()

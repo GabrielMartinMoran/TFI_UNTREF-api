@@ -5,11 +5,7 @@ from src.models.user import User
 
 @pytest.fixture
 def controller():
-    cont = AuthController()
-    # Mockeamos el metodo jsonify_response
-    cont._BaseController__jsonify_response = lambda x, y: {
-        'body': x, 'code': y}
-    return cont
+    return AuthController()
 
 
 def test_auth_controllers_instantiate_user_repository_when_instantiated(controller):
@@ -20,8 +16,8 @@ def test_create_returns_validation_error_when_user_in_json_body_is_not_valid(con
     controller.get_json_body = lambda: {
         'email': 'invalid_email', 'password': 'Passw0rd', 'username': 'Username'}
     actual = controller.register()
-    assert actual['code'] == 400
-    assert 'email' in actual['body']['message']
+    assert actual.status_code == 400
+    assert 'email' in actual.body['message']
 
 
 def test_create_returns_error_when_user_with_same_email_already_exists(controller):
@@ -30,8 +26,8 @@ def test_create_returns_error_when_user_with_same_email_already_exists(controlle
         'preferredCurrency': 'ARS'}
     controller.user_repository.email_exists = lambda x: True
     actual = controller.register()
-    assert actual['code'] == 500
-    assert actual['body']['message'] == 'User with same email already exists'
+    assert actual.status_code == 500
+    assert actual.body['message'] == 'User with same email already exists'
 
 
 def test_create_returns_error_when_can_not_insert_user_in_database(controller):
@@ -41,8 +37,8 @@ def test_create_returns_error_when_can_not_insert_user_in_database(controller):
     controller.user_repository.insert = lambda x: (
         _ for _ in ()).throw(Exception('Error'))
     actual = controller.register()
-    assert actual['code'] == 500
-    assert actual['body']['message'] == 'An error has ocurred while creating user'
+    assert actual.status_code == 500
+    assert actual.body['message'] == 'An error has ocurred while creating user'
 
 
 def test_create_returns_ok_when_user_is_created(controller):
@@ -52,19 +48,19 @@ def test_create_returns_ok_when_user_is_created(controller):
     expected = 'new_user_id'
     controller.user_repository.insert = lambda x: expected
     actual = controller.register()
-    assert actual['code'] == 200
+    assert actual.status_code == 201
 
 
 def test_get_logged_user_data_returns_error_when_user_not_found(controller):
     controller.user_repository.get_by_id = lambda id, get_avatar: None
     actual = controller.get_logged_user_data()
-    assert actual['code'] == 500
-    assert actual['body']['message'] == 'Invalid user'
+    assert actual.status_code == 500
+    assert actual.body['message'] == 'Invalid user'
 
 
 def test_get_logged_user_data_returns_user_when_user_found(controller):
     user = User('test_username', 'test@test.com', user_id='user_id')
     controller.user_repository.get_by_id = lambda id, get_avatar: user
     actual = controller.get_logged_user_data()
-    assert actual['code'] == 200
-    assert actual['body']['id'] == user.user_id
+    assert actual.status_code == 200
+    assert actual.body['id'] == user.user_id

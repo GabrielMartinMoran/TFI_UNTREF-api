@@ -1,5 +1,6 @@
 from flask import jsonify
-from src.utils import http_methods
+from src.utils.http import http_methods
+
 
 class CORSSolver:
 

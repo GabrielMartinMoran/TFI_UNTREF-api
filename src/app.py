@@ -6,7 +6,7 @@ from flask_compress import Compress
 from src import config
 from src.routing.router import Router
 from src.utils.logger import Logger
-from src.utils import http_methods
+from src.utils.http import http_methods
 from src.database.db_migrator import DBMigrator
 from src.utils.logo_printer import LogoPrinter
 

@@ -12,7 +12,7 @@ from .controller_route import ControllerRoute
 from .method_route import MethodRoute
 from .token_parser import TokenParser
 from .cors_solver import CORSSolver
-
+from ..utils.http.response import Response
 
 CONTROLLERS_FOLDER = 'controllers'
 CONTROLLERS_EXTENSION = '.py'
@@ -147,7 +147,8 @@ class Router:
         controller_instance.token = token
         method = getattr(controller_instance, method_route.method_name)
         controller_instance.on_request()
-        result = method(*method_params)
-        controller_instance.response = result
+        result: Response = method(*method_params)
+        json_response = result.jsonify()
+        controller_instance.response = json_response
         controller_instance.after_request()
-        return result
+        return json_response

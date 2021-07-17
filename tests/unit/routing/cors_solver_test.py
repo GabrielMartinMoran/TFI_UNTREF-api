@@ -1,6 +1,7 @@
 from src.routing import cors_solver
 from src.routing.cors_solver import CORSSolver
-from src.utils import http_methods
+from src.utils.http import http_methods
+
 
 class MockedRequest:
     def __init__(self, http_method: str, headers: dict={}) -> None:

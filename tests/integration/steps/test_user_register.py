@@ -1,6 +1,6 @@
 from pytest_bdd import given, scenarios, then, when, parsers
 
-from tests.integration.steps import controllers_factory
+from src.controllers.auth_controller import AuthController
 
 scenarios('../features/user_register.feature')
 
@@ -23,7 +23,7 @@ def user_is_already_registered(email):
     )
 )
 def try_register_user(username, email, password):
-    controller = controllers_factory.get_auth_controller()
+    controller = AuthController()
     controller.get_json_body = lambda: {
         'username': username,
         'email': email,
@@ -36,16 +36,16 @@ def try_register_user(username, email, password):
 @then('user registers successfully')
 def user_register_successfully():
     global last_response
-    assert last_response['code'] == 200
+    assert last_response.status_code == 201
 
 
 @then(parsers.cfparse('error is \'{message}\''))
 def error_is_password_is_not_valid(message):
     global last_response
-    assert message in last_response['body']['message']
+    assert message in last_response.body['message']
 
 
 @then('user registration fails')
 def user_register_fails():
     global last_response
-    assert last_response['code'] != 200
+    assert last_response.status_code != 201
