@@ -1,3 +1,4 @@
+from http.client import HTTPResponse
 from typing import List, Any
 from flask import jsonify
 
@@ -8,7 +9,7 @@ class Response:
         self.status_code = status_code
         self.body = body
 
-    def jsonify(self) -> 'HTTPResponse':
+    def jsonify(self) -> HTTPResponse:
         jsonified_response = jsonify(self.body)
         jsonified_response.status_code = self.status_code
         return jsonified_response
