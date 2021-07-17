@@ -1,8 +1,8 @@
-from src.controllers.users_controller import UsersController
+from src.controllers.auth_controller import AuthController
 
 
-def get_user_controller() -> UsersController:
-    controller = UsersController()
+def get_auth_controller() -> AuthController:
+    controller = AuthController()
     controller._BaseController__jsonify_response = lambda x, y: {
         'body': x, 'code': y}
     return controller

@@ -23,14 +23,14 @@ def user_is_already_registered(email):
     )
 )
 def try_register_user(username, email, password):
-    controller = controllers_factory.get_user_controller()
+    controller = controllers_factory.get_auth_controller()
     controller.get_json_body = lambda: {
         'username': username,
         'email': email,
         'password': password
     }
     global last_response
-    last_response = controller.create()
+    last_response = controller.register()
 
 
 @then('user registers successfully')
