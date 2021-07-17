@@ -1,0 +1,23 @@
+[run]
+omit=
+    tests/*
+    env/*
+    venv/*
+    logs/*
+    setup.py
+    */__init__.py
+    .vscode/*
+    */client/*
+    */migrations/*
+    */config.py
+    */api.py
+    */logo_printer.py
+    */console_colors.py
+    run.py
+    .coverage
+    .coveragerc
+    .gitignore
+
+[report]
+show_missing=True
+fail_under=0
