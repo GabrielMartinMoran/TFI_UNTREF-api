@@ -5,9 +5,9 @@ name: Python Web API
 
 on:
   push:
-    branches: [ dev, main ]
+    branches: [ dev, master ]
   pull_request:
-    branches: [ dev, main ]
+    branches: [ dev, master ]
 
 jobs:
   Python_web_API_testing:
