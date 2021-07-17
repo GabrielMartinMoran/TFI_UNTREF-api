@@ -1,0 +1,4 @@
+Refactors pendientes:
+- Migrar AppInfo del db_migrator a un model y un repository
+- Migrar descubrimiento de rutas del router a una clase llamada RouteDiscoverer
+- Cambiar en UserRepository la instanciacion User(None, None)
