@@ -21,10 +21,10 @@ def device_json():
     return {
         'id': '1234',
         'name': 'device_name',
-        'bleId': 'e348ae42-ebb0-4453-a12f-c05bdadd1479',
+        'ble_id': 'e348ae42-ebb0-4453-a12f-c05bdadd1479',
         'active': True,
-        'turnedOn': True,
-        'createdDate': 'date',
+        'turned_on': True,
+        'created_date': 'date',
         'measures': [{
             'timestamp': 10000,
             'voltage': 220.0,
@@ -66,10 +66,10 @@ def test_from_json_returns_device_when_json_is_provided(device_json):
     actual = Device.from_dict(device_json)
     assert actual.device_id == device_json['id']
     assert actual.name == device_json['name']
-    assert actual.ble_id == device_json['bleId']
+    assert actual.ble_id == device_json['ble_id']
     assert actual.active == device_json['active']
-    assert actual.turned_on == device_json['turnedOn']
-    assert actual.created_date == device_json['createdDate']
+    assert actual.turned_on == device_json['turned_on']
+    assert actual.created_date == device_json['created_date']
     assert actual.measures[0].timestamp == device_json['measures'][0]['timestamp']
     assert actual.measures[0].voltage == device_json['measures'][0]['voltage']
     assert actual.measures[0].current == device_json['measures'][0]['current']
@@ -79,9 +79,9 @@ def test_to_json_returns_device_as_json_when_called(device):
     actual = device.to_dict()
     assert actual['id'] == device.device_id
     assert actual['name'] == device.name
-    assert actual['bleId'] == device.ble_id
+    assert actual['ble_id'] == device.ble_id
     assert actual['active'] == device.active
-    assert actual['turnedOn'] == device.turned_on
+    assert actual['turned_on'] == device.turned_on
     assert actual['measures'][0]['timestamp'] == device.measures[0].timestamp
     assert actual['measures'][0]['voltage'] == device.measures[0].voltage
     assert actual['measures'][0]['current'] == device.measures[0].current

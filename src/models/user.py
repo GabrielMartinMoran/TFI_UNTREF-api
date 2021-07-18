@@ -25,33 +25,33 @@ class User(BaseModel):
         self.avatar = None
         self.hashed_password = None
 
-    def to_dict(self, include_hashed_password=False, creating_user: bool = False):
+    def to_dict(self, include_hashed_password=False, creating_user: bool = False) -> dict:
         result = {
             'username': self.username,
             'email': self.email,
             'id': self.user_id,
             'avatar': self.avatar,
-            'createdDate': self.created_date
+            'created_date': self.created_date
         }
         if include_hashed_password:
-            result['hashedPassword'] = self.hashed_password
+            result['hashed_password'] = self.hashed_password
         return result
 
     @staticmethod
-    def from_dict(json) -> 'User':
+    def from_dict(data: dict) -> 'User':
         model = User(
-            json.get('username'),
-            json.get('email'),
-            user_id=str(get_json_prop(json, 'id', '_id')),
-            password=json.get('password')
+            data.get('username'),
+            data.get('email'),
+            user_id=data.get('id'),
+            password=data.get('password')
         )
-        model.avatar = get_json_prop(json, 'avatar')
-        if 'createdDate' in json:
-            model.created_date = json.get('createdDate')
+        model.avatar = get_json_prop(data, 'avatar')
+        if 'created_date' in data:
+            model.created_date = data.get('created_date')
         if model.password:
             model.hashed_password = hash_password(model.password)
         else:
-            model.hashed_password = json.get('hashedPassword')
+            model.hashed_password = data.get('hashed_password')
         return model
 
     def password_matches(self, non_hashed_password) -> bool:

@@ -16,7 +16,7 @@ class Measure(BaseModel):
         self.voltage = voltage
         self.current = current
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             'timestamp': self.timestamp,
             'voltage': self.voltage,
@@ -24,11 +24,11 @@ class Measure(BaseModel):
         }
 
     @staticmethod
-    def from_dict(json):
+    def from_dict(data: dict) -> 'Measure':
         model = Measure(
-            json.get('timestamp'),
-            json.get('voltage'),
-            json.get('current'),
+            data.get('timestamp'),
+            data.get('voltage'),
+            data.get('current'),
         )
         if isinstance(model.voltage, int):
             model.voltage = float(model.voltage)

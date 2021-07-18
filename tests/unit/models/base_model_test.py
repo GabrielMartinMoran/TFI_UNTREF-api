@@ -18,6 +18,6 @@ def test_is_valid_returns_true_when_no_validation_errors(base_model):
     assert base_model.is_valid()
 
 def test_from_json_returns_base_model_instance_when_json_provided():
-    json = {'createdDate': 1000 }
+    json = {'created_date': 1000 }
     actual = BaseModel.from_dict(json)
-    assert actual.created_date == json['createdDate']
+    assert actual.created_date == json['created_date']

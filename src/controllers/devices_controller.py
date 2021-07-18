@@ -5,7 +5,7 @@ from src.utils.http.route import route
 from src.utils.logger import Logger
 from src.controllers.base_controller import BaseController
 from src.utils.http import http_methods
-from src.utils.ble_id_generator import BLEIdGenerator
+from src.utils.ble_id_generator import ble_idGenerator
 from src.models.device import Device
 from src.repositories.device_repository import DeviceRepository
 
@@ -19,7 +19,7 @@ class DevicesController(BaseController):
 
     @route(http_methods.GET)
     def generate_ble_id(self) -> Response:
-        return self.ok({'bleId': BLEIdGenerator.generate_ble_id()})
+        return self.ok({'ble_id': ble_idGenerator.generate_ble_id()})
 
     @route(http_methods.POST, auth_required=True)
     def create(self) -> Response:
@@ -28,7 +28,7 @@ class DevicesController(BaseController):
         if not device.is_valid():
             return self.validation_error(device.validation_errors)
         if self.device_repository.ble_id_exists_for_user(device.ble_id, user_id):
-            return self.error('Ya existe un dispositivo con el mismo bleId')
+            return self.error('Ya existe un dispositivo con el mismo ble_id')
         try:
             device.device_id = self.device_repository.insert(device, user_id)
         except Exception as ex:

@@ -23,26 +23,26 @@ class Device(BaseModel):
         self.turned_on = turned_on
         self.measures = []
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             'id': self.device_id,
             'name': self.name,
-            'bleId': self.ble_id,
+            'ble_id': self.ble_id,
             'measures': [measure.to_dict() for measure in self.measures],
             'active': self.active,
-            'turnedOn': self.turned_on
+            'turned_on': self.turned_on
         }
 
     @staticmethod
-    def from_dict(json):
+    def from_dict(data: dict) -> 'Device':
         model = Device(
-            json.get('name'),
-            json.get('bleId', '').lower(),
-            device_id=str(get_json_prop(json, 'id', '_id') or ''),
-            active=json.get('active', False),
-            turned_on=json.get('turnedOn', False),
+            data.get('name'),
+            data.get('ble_id').lower() if 'ble_id' in data else None,
+            device_id=data.get('id'),
+            active=data.get('active', False),
+            turned_on=data.get('turned_on', False),
         )
-        model.measures = [Measure.from_dict(x) for x in json.get('measures', [])]
-        if 'createdDate' in json:
-            model.created_date = get_json_prop(json, 'createdDate')
+        model.measures = [Measure.from_dict(x) for x in data.get('measures', [])]
+        if 'created_date' in data:
+            model.created_date = data.get('created_date')
         return model
