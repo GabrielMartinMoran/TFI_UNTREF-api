@@ -20,7 +20,8 @@ class Measure(BaseModel):
         return {
             'timestamp': self.timestamp,
             'voltage': self.voltage,
-            'current': self.current
+            'current': self.current,
+            'power': self.power
         }
 
     @staticmethod
@@ -35,3 +36,7 @@ class Measure(BaseModel):
         if isinstance(model.current, int):
             model.current = float(model.current)
         return model
+
+    @property
+    def power(self):
+        return self.voltage * self.current

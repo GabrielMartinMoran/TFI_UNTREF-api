@@ -74,6 +74,16 @@ def test_from_json_returns_measure_when_json_is_provided(measure_json):
 
 def test_to_json_returns_measure_as_json_when_called(measure):
     actual = measure.to_dict()
-    assert actual['timestamp'] == measure.timestamp
-    assert actual['voltage'] == measure.voltage
-    assert actual['current'] == measure.current
+    assert actual == {
+        'timestamp': measure.timestamp,
+        'voltage': measure.voltage,
+        'current': measure.current,
+        'power': measure.voltage * measure.current
+    }
+
+
+def test_power_returns_measure_power_when_called(measure):
+    measure.voltage = 220.0
+    measure.current = 2.0
+    actual = measure.power
+    assert actual == 440.0
