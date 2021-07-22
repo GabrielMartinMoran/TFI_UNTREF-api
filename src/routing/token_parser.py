@@ -3,7 +3,6 @@ from src import config
 
 
 class TokenParser:
-
     TOKEN_TYPE = 'Bearer'
     AUTH_HEADER = 'Authorization'
 
@@ -15,13 +14,13 @@ class TokenParser:
     def __parse_token(self) -> None:
         try:
             token = self.__get_token_from_header()
-            if not token or not self.TOKEN_TYPE in token:
+            if not token or self.TOKEN_TYPE not in token:
                 return
             token = self.__remove_token_type(token)
             data = self.__decode_token(token)
             self.token = data
             return
-        except Exception as ex:
+        except Exception:
             return
 
     def __get_token_from_header(self) -> str:
@@ -29,7 +28,7 @@ class TokenParser:
 
     def __remove_token_type(self, str_token: str) -> str:
         # +1 por el espacio que sigue luego del tipo
-        return str_token[len(self.TOKEN_TYPE)+1:]
+        return str_token[len(self.TOKEN_TYPE) + 1:]
 
     def __decode_token(self, str_token: str) -> str:
         return jwt.decode(str_token, config.APP_SECRET, algorithms=[config.HASH_ALGORITHM])

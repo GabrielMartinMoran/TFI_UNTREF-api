@@ -43,7 +43,6 @@ class QueryResult:
         return result
 
     def __get_object_attributes(self, model_instance: object):
-        return [ x for x in dir(model_instance) if 
-                    type(getattr(model_instance, x)) != types.MethodType and
-                    not x.startswith('__')
-        ]
+        return [x for x in dir(model_instance) if
+                not isinstance(getattr(model_instance, x), types.MethodType) and
+                not x.startswith('__')]

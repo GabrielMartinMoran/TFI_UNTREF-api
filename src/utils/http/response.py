@@ -1,5 +1,5 @@
 from http.client import HTTPResponse
-from typing import List, Any
+from typing import Any
 from flask import jsonify
 
 

@@ -6,8 +6,10 @@ import src.config as config
 
 SRC_FOLDER = 'src'
 
+
 class Logger:
     __instance__ = None
+
     def __init__(self):
         if Logger.__instance__ is None:
             Logger.__create_path()
@@ -29,7 +31,7 @@ class Logger:
         return file_handler
 
     @staticmethod
-    def get_logger(name : str):
+    def get_logger(name: str):
         if Logger.__instance__ is None:
             Logger()
         Logger.__instance__.name = name.split('src')[1]
@@ -43,5 +45,5 @@ class Logger:
             os.mkdir(config.LOGS_FOLDER)
         # Creamos el archivo
         if not os.path.exists(path):
-            f =  open(path, 'w')
+            f = open(path, 'w')
             f.close()

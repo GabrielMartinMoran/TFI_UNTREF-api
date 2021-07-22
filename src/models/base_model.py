@@ -1,6 +1,4 @@
 from typing import List
-
-from src.utils.json_utils import get_json_prop
 import datetime
 
 from src.utils.validators.validator import Validator
@@ -30,5 +28,5 @@ class BaseModel:
     def from_dict(data: dict) -> 'BaseModel':
         model = BaseModel()
         if 'created_date' in data:
-            model.created_date = get_json_prop(data, 'created_date')
+            model.created_date = data.get('created_date')
         return model

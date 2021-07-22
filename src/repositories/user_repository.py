@@ -41,5 +41,3 @@ class UserRepository(BaseRepository):
     def update_password(self, user_id: int, hashed_pass: str) -> bool:
         res = self._execute_query(f"UPDATE Users SET hashed_password = '{hashed_pass}' WHERE user_id = {user_id}")
         return res.rows_affected == 1
-        # cursor = self._execute_query(f"SELECT COUNT(user_id) FROM Users WERE user_id = {user_id} AND hashed_password = '{hashed_pass}'")
-        # return cursor.fetchone()[0] == 1

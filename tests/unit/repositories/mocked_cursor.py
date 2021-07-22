@@ -1,12 +1,13 @@
 from typing import List
 
 
-class CursorColumnDescription():
+class CursorColumnDescription:
 
     def __init__(self, name) -> None:
         self.name = name
 
-class MockedCursor():
+
+class MockedCursor:
 
     def __init__(self) -> None:
         self.execute_raises_exception = False
@@ -15,7 +16,7 @@ class MockedCursor():
         self.description = None
         self.rows = []
 
-    def prepare(self, table: dict = {}, affected_rows: int=0, execute_raises_exception=False) -> None:
+    def prepare(self, table: dict = {}, affected_rows: int = 0, execute_raises_exception=False) -> None:
         self.execute_raises_exception = execute_raises_exception
         self.executed_query = ''
         self.rowcount = affected_rows

@@ -19,10 +19,10 @@ class Device:
     def to_dict(self):
         return {
             'name': self.name,
-            'ble_id': self.ble_id,
+            'bleId': self.ble_id,
             'measures': [measure.to_dict() for measure in self.measures],
             'active': self.active,
-            'turned_on': self.turned_on
+            'turnedOn': self.turned_on
         }
 
 

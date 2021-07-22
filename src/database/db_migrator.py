@@ -50,7 +50,8 @@ class DBMigrator:
             conn.close()
 
     def __get_db_connection(self, specify_database=True):
-        conn_string = f"user='{config.DB_USERNAME}' password='{config.DB_PASSWORD}' host='{config.DB_URL}' port='{config.DB_PORT}'"
+        conn_string = f"user='{config.DB_USERNAME}' password='{config.DB_PASSWORD}' host='{config.DB_URL}' " \
+                      f"port='{config.DB_PORT}'"
         if specify_database:
             conn_string += f" dbname='{config.DB_NAME}'"
         return psycopg2.connect(conn_string)
@@ -61,7 +62,8 @@ class DBMigrator:
         try:
             cursor.execute("CREATE TABLE AppInfo (key VARCHAR(255) PRIMARY KEY, value VARCHAR(255) NOT NULL)")
             cursor.execute(
-                f"INSERT INTO AppInfo (key, value) VALUES ('{config.LAST_MIGRATION_APP_INFO_KEY}', 0), ('{config.LAST_MIGRATION_APP_INFO_DATE}', NOW())")
+                f"INSERT INTO AppInfo (key, value) VALUES ('{config.LAST_MIGRATION_APP_INFO_KEY}', 0), "
+                f"('{config.LAST_MIGRATION_APP_INFO_DATE}', NOW())")
             conn.commit()
         except Exception as e:
             conn.rollback()
@@ -76,7 +78,8 @@ class DBMigrator:
         conn = self.__get_db_connection()
         cursor = conn.cursor()
         for x in self.MIGRATIONS:
-            common_msg = F'la migracion {x.MIGRATION_NUMBER} del archivo {self.get_migration_filename(x)}{console_colors.ENDC}'
+            common_msg = F'la migracion {x.MIGRATION_NUMBER} del archivo {self.get_migration_filename(x)}' \
+                         F'{console_colors.ENDC}'
             if x.MIGRATION_NUMBER <= self.get_last_applied_migration():
                 print(F'{console_colors.WARNING} ‣ Saltando {common_msg}')
             else:
@@ -114,10 +117,10 @@ class DBMigrator:
         self.update_to_last_migration(migration_class.MIGRATION_NUMBER, cursor)
 
     def update_to_last_migration(self, last_migration_number: int, cursor: object):
-        cursor.execute(
-            f"UPDATE AppInfo SET value = '{last_migration_number}' WHERE key = '{config.LAST_MIGRATION_APP_INFO_KEY}'")
-        cursor.execute(
-            f"UPDATE AppInfo SET value = '{datetime.datetime.now()}' WHERE key = '{config.LAST_MIGRATION_APP_INFO_DATE}'")
+        cursor.execute(f"UPDATE AppInfo SET value = '{last_migration_number}' WHERE "
+                       f"key = '{config.LAST_MIGRATION_APP_INFO_KEY}'")
+        cursor.execute(f"UPDATE AppInfo SET value = '{datetime.datetime.now()}' WHERE "
+                       f"key = '{config.LAST_MIGRATION_APP_INFO_DATE}'")
 
     def get_migration_filename(self, migration_class):
         return os.path.split(sys.modules[migration_class.__module__].__file__)[1]

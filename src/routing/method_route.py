@@ -1,6 +1,7 @@
-class MethodRoute:  # pylint: disable=too-few-public-methods
+class MethodRoute:
 
-    def __init__(self, controller_class: type, method_name: str, http_type: str, alias: str, auth_required: bool) -> None: # pylint: disable=too-many-arguments
+    def __init__(self, controller_class: type, method_name: str, http_type: str, alias: str,
+                 auth_required: bool) -> None:
         self.controller_class = controller_class
         self.method_name = method_name
         self.http_type = http_type

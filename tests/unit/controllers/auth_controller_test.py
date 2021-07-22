@@ -38,7 +38,7 @@ def test_create_returns_error_when_can_not_insert_user_in_database(controller):
         _ for _ in ()).throw(Exception('Error'))
     actual = controller.register()
     assert actual.status_code == 500
-    assert actual.body['message'] == 'An error has ocurred while creating user'
+    assert actual.body['message'] == 'An error has occurred while creating user'
 
 
 def test_create_returns_ok_when_user_is_created(controller):

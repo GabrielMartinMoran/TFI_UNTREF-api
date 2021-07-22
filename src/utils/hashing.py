@@ -1,5 +1,6 @@
 from hashlib import sha256
 
+
 def hash_password(password: str) -> str:
     if not password:
         return None

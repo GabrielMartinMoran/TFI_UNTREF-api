@@ -1,7 +1,6 @@
 from src.models.measure import Measure
 from src.utils.validators.string_validator import StringValidator
 from src.models.base_model import BaseModel
-from src.utils.json_utils import get_json_prop
 
 
 class Device(BaseModel):

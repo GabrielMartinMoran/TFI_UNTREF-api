@@ -2,6 +2,7 @@ import src.config as config
 import psycopg2
 from src.utils.query_result import QueryResult
 
+
 class BaseRepository:
 
     def _execute_query(self, query: str, transaction=None) -> QueryResult:
@@ -26,5 +27,6 @@ class BaseRepository:
         return result
 
     def _create_transaction(self):
-        conn_string = f"user='{config.DB_USERNAME}' password='{config.DB_PASSWORD}' host='{config.DB_URL}' port='{config.DB_PORT}' dbname='{config.DB_NAME}'"
+        conn_string = f"user='{config.DB_USERNAME}' password='{config.DB_PASSWORD}' host='{config.DB_URL}' " \
+                      f"port='{config.DB_PORT}' dbname='{config.DB_NAME}'"
         return psycopg2.connect(conn_string)

@@ -1,7 +1,7 @@
 from base64 import b64encode
 
-class ImageEncoder:
 
+class ImageEncoder:
     BASE_64_ENCODING_PREFIX = 'data:image/jpg;base64,'
 
     @staticmethod

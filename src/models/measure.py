@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.utils.validators.int_validator import IntValidator
 from src.utils.validators.float_validator import FloatValidator
 from src.models.base_model import BaseModel
@@ -40,3 +42,7 @@ class Measure(BaseModel):
     @property
     def power(self):
         return self.voltage * self.current
+
+    @property
+    def time(self) -> datetime:
+        return datetime.fromtimestamp(self.timestamp)

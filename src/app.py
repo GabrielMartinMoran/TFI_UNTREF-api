@@ -18,6 +18,7 @@ compress = Compress(app)
 
 router = Router()
 
+
 @app.route(F'/{Router.get_base_url()}/<path:path>', methods=http_methods.get_methods_list())
 @compress.compressed()
 def route(path):
@@ -50,13 +51,16 @@ def not_found(path):
 def on_app_stopped():
     Logger.get_logger(__file__).info("App stopped")
 
+
 atexit.register(on_app_stopped)
+
 
 def on_starting(server):
     router.print_routemaps()
     LogoPrinter.print_logo()
     DBMigrator().run_migrations()
     Logger.get_logger(__file__).info("App started")
+
 
 def run():
     on_starting(None)

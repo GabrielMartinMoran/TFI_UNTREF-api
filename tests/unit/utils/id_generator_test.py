@@ -1,4 +1,4 @@
-from src.utils.id_generator import *
+from src.utils.id_generator import generate_unique_id, ID_LENGTH
 
 
 def test_generate_unique_id_returns_24_length_string():

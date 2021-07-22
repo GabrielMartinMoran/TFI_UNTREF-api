@@ -48,7 +48,7 @@ def test_execute_query_creates_trasaction_when_not_provided(repository: BaseRepo
     mocked_transaction = None
     repository._create_transaction = create_transaction
     mocked_cursor.prepare()
-    actual = repository._execute_query(mocked_query)
+    repository._execute_query(mocked_query)
     assert mocked_transaction is not None
     assert mocked_transaction.commited
     assert mocked_transaction.closed
@@ -72,7 +72,7 @@ def test_execute_query_uses_existing_transaction_if_provided(repository: BaseRep
     global mocked_transaction
     mocked_transaction = MockedTransaction()
     mocked_cursor.prepare()
-    actual = repository._execute_query(mocked_query, mocked_transaction)
+    repository._execute_query(mocked_query, mocked_transaction)
     assert not mocked_transaction.commited
     assert not mocked_transaction.closed
     assert mocked_query == mocked_cursor.executed_query

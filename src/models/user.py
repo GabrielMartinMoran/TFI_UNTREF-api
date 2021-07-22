@@ -1,7 +1,6 @@
 from src.utils.validators.string_validator import StringValidator
 from src.utils import validation_patterns
 from src.models.base_model import BaseModel
-from src.utils.json_utils import get_json_prop
 from src.utils.hashing import hash_password
 
 
@@ -45,7 +44,7 @@ class User(BaseModel):
             user_id=data.get('id'),
             password=data.get('password')
         )
-        model.avatar = get_json_prop(data, 'avatar')
+        model.avatar = data.get('avatar')
         if 'created_date' in data:
             model.created_date = data.get('created_date')
         if model.password:

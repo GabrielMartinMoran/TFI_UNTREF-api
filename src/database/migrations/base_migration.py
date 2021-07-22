@@ -1,11 +1,7 @@
-from re import I
 from typing import List
-from pymongo import MongoClient
-from src import config
 
 
 class BaseMigration:
-
     MIGRATION_NUMBER = None
 
     def __init__(self) -> None:

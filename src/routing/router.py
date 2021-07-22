@@ -3,8 +3,6 @@ import os
 import sys
 import pathlib
 import importlib
-from flask.json import jsonify
-import pymongo
 from flask import make_response
 from src.utils import console_colors, global_variables, text_formatters
 from src.utils.logger import Logger
@@ -44,7 +42,7 @@ class Router:
             global_variables.ROUTER_INSTANCE.http_methods.append(http_method)
 
     def route(self, request, path):
-        splitted_path = path.split('/') # Aunque sea un string vacio, el primer elemento siempre existe
+        splitted_path = path.split('/')  # Aunque sea un string vacio, el primer elemento siempre existe
         controller_name = splitted_path[0]
         method_name = F'/{splitted_path[1]}' if len(splitted_path) > 1 else '/'
 
@@ -79,8 +77,11 @@ class Router:
             print(F'{console_colors.ERROR}{ex}{console_colors.ENDC}')
             return self.error_response('Internal server error', 500)
 
-    def print_routemaps(self): # pragma: no cover
-        print(console_colors.HEADER + console_colors.UNDERLINE + '\nMapa de controllers utilizados:' + console_colors.ENDC)
+    def print_routemaps(self):  # pragma: no cover
+        print(
+            console_colors.HEADER + console_colors.UNDERLINE + '\nMapa de controllers utilizados:' +
+            console_colors.ENDC
+        )
         for route in self.routes:
             print(F'  • {console_colors.WARNING}{route.controller_name()}{console_colors.ENDC} -> '
                   F'{console_colors.OK}/{self.get_base_url()}/{route.route()}{console_colors.ENDC}')
@@ -93,31 +94,30 @@ class Router:
         global_variables.ROUTER_INSTANCE = self
 
     def __map_routes(self):
-        Logger.get_logger(__file__).debug("Mapeo de rutas Start...")
+        Logger.get_logger(__file__).debug("Mapeo de rutas iniciado...")
         print(F'\n{console_colors.INFO}Comenzando el mapeo de rutas:{console_colors.ENDC}')
         # self.http_methods se llena al cargar los controlles ya que importa los modulos
-        for contr in self.__discover_controllers():
-            controller_route = ControllerRoute(contr)
+        for controller in self.__discover_controllers():
+            controller_route = ControllerRoute(controller)
             self.routes.append(controller_route)
-            for meth in self.http_methods:
-                if meth['class_name'] == controller_route.controller_name():
-                    controller_route.add_method(meth['method_name'], meth['type'], meth['alias'], meth['auth_required'])
-        Logger.get_logger(__file__).debug("Mapeo de rutas Done...")
+            for method in self.http_methods:
+                if method['class_name'] == controller_route.controller_name():
+                    controller_route.add_method(method['method_name'], method['type'], method['alias'],
+                                                method['auth_required'])
+        Logger.get_logger(__file__).debug("Mapeo de rutas finalizado...")
 
     def __discover_controllers_modules(self):
-        controllers_path = os.path.join(pathlib.Path(
-            __file__).parent.parent.absolute(), CONTROLLERS_FOLDER)
+        controllers_path = os.path.join(pathlib.Path(__file__).parent.parent.absolute(), CONTROLLERS_FOLDER)
         sys.path.append(controllers_path)
-        mod_list = [fil[:-3]
-                    for fil in os.listdir(controllers_path) if fil[-3:] == CONTROLLERS_EXTENSION]
+        mod_list = [filename[:-3] for filename in os.listdir(controllers_path) if
+                    filename[-3:] == CONTROLLERS_EXTENSION]
         return [mod for mod in mod_list if mod not in EXCLUDED_CONTROLLERS]
 
     def __get_controller_class(self, module_name):
         try:
             controller_module = importlib.import_module(module_name)
         except ImportError as e:
-            print(F' ⚠ {console_colors.WARNING}No se pudo importar el archivo'
-                  F' {module_name}{CONTROLLERS_EXTENSION}. '
+            print(F' ⚠ {console_colors.WARNING}No se pudo importar el archivo {module_name}{CONTROLLERS_EXTENSION}. '
                   F'Ignorando mapeo del controlador{console_colors.ENDC}')
             Logger.get_logger(__file__).error(e)
             return None
@@ -131,7 +131,7 @@ class Router:
         return None
 
     def __discover_controllers(self):
-        return list(filter(None.__ne__,map(self.__get_controller_class, self.__discover_controllers_modules())))
+        return list(filter(None.__ne__, map(self.__get_controller_class, self.__discover_controllers_modules())))
 
     def __get_routed_method(self, controller, method, http_type) -> bool:
         for cont_route in self.routes:
