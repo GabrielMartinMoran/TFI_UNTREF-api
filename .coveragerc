@@ -10,7 +10,7 @@ omit=
     */client/*
     */migrations/*
     */config.py
-    */api.py
+    */mocked-api.py
     */logo_printer.py
     */console_colors.py
     run.py

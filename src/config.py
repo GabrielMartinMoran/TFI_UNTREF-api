@@ -59,3 +59,9 @@ ROTATION_SUFFIX_REGEX = r'^\d{4}-\d{2}-\d{2}_-\d{2}-\d{2}-\d{2}.log$'
 # --------------------- #
 class ErrorCodes:
     ACCOUNT_NOT_VERIFIED = 'ACCOUNT_NOT_VERIFIED'
+
+
+# --------------------- #
+# -MEASURES SUMMARIZER- #
+# --------------------- #
+MAX_SUMMARIZED_MEASURES_TO_SHOW = 50

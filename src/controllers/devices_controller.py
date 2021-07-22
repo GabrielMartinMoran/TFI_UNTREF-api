@@ -5,6 +5,7 @@ from src.models.measure import Measure
 from src.services.devices.device_creator import DeviceCreator
 from src.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
+from src.services.devices.devices_obtainer import DevicesRetriever
 from src.utils.http.response import Response
 from src.utils.http.route import route
 from src.utils.logger import Logger
@@ -35,7 +36,7 @@ class DevicesController(BaseController):
         try:
             device_id = device_creator.create_device(device, self.get_authenticated_user_id())
         except DeviceAlreadyExistentException:
-            self.error('There is another device with the same ble_id for logged user')
+            return self.error('There is another device with the same ble_id for logged user')
         except Exception as ex:
             Logger.get_logger(__file__).error(ex)
             return self.error('An error has occurred while creating the device')
@@ -54,14 +55,22 @@ class DevicesController(BaseController):
         except Exception as ex:
             Logger.get_logger(__file__).error(ex)
             return self.error('An error has ocurred while creating the measure')
-        return self.ok()
+        return self.created_ok()
 
     @route(http_methods.GET, auth_required=True)
     def get_measures(self, ble_id: str, time_interval: int) -> Response:
-        user_id = self.get_authenticated_user_id()
         summarizer = DeviceMeasureSummarizer(self.device_repository, self.measure_repository)
         try:
-            measures = summarizer.get_summarized_measures(ble_id, user_id, time_interval)
+            measures = summarizer.get_summarized_measures(ble_id, self.get_authenticated_user_id(), time_interval)
         except UnregisteredDeviceException:
             return self.error('Device identifier is not valid for logged user')
         return self.ok([x.to_dict() for x in measures])
+
+    @route(http_methods.GET, auth_required=True)
+    def get_all(self) -> Response:
+        devices_retriever = DevicesRetriever(self.device_repository)
+        try:
+            devices = devices_retriever.get_user_devices(self.get_authenticated_user_id())
+        except Exception:
+            return self.error('An error has occurred while trying to obtain logged user devices')
+        return self.ok([device.to_dict() for device in devices])

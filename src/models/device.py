@@ -36,7 +36,7 @@ class Device(BaseModel):
     def from_dict(data: dict) -> 'Device':
         model = Device(
             data.get('name'),
-            data.get('ble_id').lower() if 'ble_id' in data else None,
+            data.get('ble_id', '').lower() if data.get('ble_id') else None,
             device_id=data.get('id'),
             active=data.get('active', False),
             turned_on=data.get('turned_on', False),
