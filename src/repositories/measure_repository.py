@@ -16,7 +16,7 @@ class MeasureRepository(BaseRepository):
                                   f"AND user_id = '{user_id}')"
                                   f"AND timestamp::TIMESTAMP >= "
                                   f"(now()::TIMESTAMP - INTERVAL '{time_interval} min')")
-        measures = res.to_model_list(Measure(0, 0, 0))
+        measures = res.map_all(Measure)
         # Convert timestamps to int
         for measure in measures:
             measure.timestamp = int(measure.timestamp.timestamp())

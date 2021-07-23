@@ -14,7 +14,7 @@ class UserLogger:
         self._user_repository = user_repository
 
     def login_user(self, email: str, password: str) -> str:
-        user = self.user_repository.get_by_email(email)
+        user = self._user_repository.get_by_email(email)
         if user is None or not user.password_matches(password):
             raise InvalidLoginException()
         return self._generate_jwt(user)

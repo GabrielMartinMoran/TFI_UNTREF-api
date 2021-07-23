@@ -41,7 +41,7 @@ class User(BaseModel):
         model = User(
             data.get('username'),
             data.get('email'),
-            user_id=data.get('id'),
+            user_id=data.get('id') or data.get('user_id'),
             password=data.get('password')
         )
         model.avatar = data.get('avatar')

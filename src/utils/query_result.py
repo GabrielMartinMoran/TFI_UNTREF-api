@@ -1,6 +1,6 @@
-from copy import deepcopy
-import types
 from typing import List
+
+from src.models.base_model import BaseModel
 
 
 class QueryResult:
@@ -8,7 +8,7 @@ class QueryResult:
     def __init__(self) -> None:
         self.colums = []
         self.rows = []
-        self.table = {}
+        self.records = []
         self.rows_affected = 0
 
     def from_cursor(self, cursor: object) -> None:
@@ -18,31 +18,22 @@ class QueryResult:
             return
         self.colums = [x.name for x in cursor.description]
         self.rows = cursor.fetchall()
-        self.table = {}
-        for col in self.colums:
-            self.table[col] = []
+        self.records = []
         for row in self.rows:
+            record = {}
             for i, col in enumerate(self.colums):
-                self.table[col].append(row[i])
+                record[col] = row[i]
+            self.records.append(record)
 
-    def first_to_model(self, model_instance_example: object) -> object:
-        models = self.to_model_list(model_instance_example)
-        if len(models) > 0:
-            return models[0]
-        return None
+    def first(self) -> dict:
+        if not self.records:
+            return {}
+        return self.records[0]
 
-    def to_model_list(self, model_instance_example: object) -> List[object]:
-        attributes = self.__get_object_attributes(model_instance_example)
-        result = []
-        for row in self.rows:
-            model = deepcopy(model_instance_example)
-            for i, col in enumerate(self.colums):
-                if col in attributes:
-                    setattr(model, col, row[i])
-            result.append(model)
-        return result
+    def map_first(self, model_class: type) -> BaseModel:
+        if not self.records:
+            return None
+        return model_class.from_dict(self.records[0])
 
-    def __get_object_attributes(self, model_instance: object):
-        return [x for x in dir(model_instance) if
-                not isinstance(getattr(model_instance, x), types.MethodType) and
-                not x.startswith('__')]
+    def map_all(self, model_class: type) -> List[BaseModel]:
+        return [model_class.from_dict(x) for x in self.records]
