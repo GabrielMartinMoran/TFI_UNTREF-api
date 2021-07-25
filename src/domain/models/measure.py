@@ -28,7 +28,7 @@ class Measure(BaseModel):
         if isinstance(timestamp, str):
             return parser.parse(timestamp)
         if isinstance(timestamp, int):
-            return datetime.fromtimestamp(timestamp)
+            return datetime.utcfromtimestamp(timestamp)
         raise ValueError('invalid timestamp')
 
     @property

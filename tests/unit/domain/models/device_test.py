@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
 from tests.model_stubs.device_stub import DeviceStub
@@ -63,7 +64,7 @@ def test_from_dict_instantiates_device_from_provided_dict(device_json):
     assert actual.active == device_json['active']
     assert actual.turned_on == device_json['turned_on']
     assert actual.created_date == device_json['created_date']
-    assert actual.measures[0].timestamp.timestamp() == device_json['measures'][0]['timestamp']
+    assert actual.measures[0].timestamp == datetime.utcfromtimestamp(device_json['measures'][0]['timestamp'])
     assert actual.measures[0].voltage == device_json['measures'][0]['voltage']
     assert actual.measures[0].current == device_json['measures'][0]['current']
 

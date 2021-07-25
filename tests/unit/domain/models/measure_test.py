@@ -51,7 +51,7 @@ def test_is_valid_returns_true_when_all_properties_are_valid():
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):
     actual = Measure.from_dict(measure_json)
-    assert actual.timestamp == datetime.fromtimestamp(measure_json['timestamp'])
+    assert actual.timestamp == datetime.utcfromtimestamp(measure_json['timestamp'])
     assert actual.voltage == measure_json['voltage']
     assert actual.current == measure_json['current']
 

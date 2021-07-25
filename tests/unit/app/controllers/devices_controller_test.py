@@ -110,19 +110,19 @@ def test_measures_returns_ok_response_when_could_summarize_measures(controller):
     actual = controller.get_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905', 5)
     assert actual.status_code == 200
     assert actual.body == [
-        {'current': 5.432, 'power': 1198.141672, 'timestamp': '2021-07-17T16:48:16', 'voltage': 220.571},
-        {'current': 5.555, 'power': 1224.45532, 'timestamp': '2021-07-17T16:48:22', 'voltage': 220.424},
-        {'current': 5.512, 'power': 1209.3328, 'timestamp': '2021-07-17T16:48:28', 'voltage': 219.4},
-        {'current': 5.628, 'power': 1232.13804, 'timestamp': '2021-07-17T16:48:34', 'voltage': 218.93},
-        {'current': 5.579, 'power': 1222.676903, 'timestamp': '2021-07-17T16:48:40', 'voltage': 219.157},
-        {'current': 5.676, 'power': 1253.84259, 'timestamp': '2021-07-17T16:48:46', 'voltage': 220.90249999999997},
-        {'current': 5.449, 'power': 1187.66404, 'timestamp': '2021-07-17T16:48:52', 'voltage': 217.96},
-        {'current': 5.239, 'power': 1149.656638, 'timestamp': '2021-07-17T16:48:58', 'voltage': 219.442},
-        {'current': 5.639, 'power': 1232.4711180000002, 'timestamp': '2021-07-17T16:49:22', 'voltage': 218.562},
-        {'current': 5.699, 'power': 1263.3657179999998, 'timestamp': '2021-07-17T16:49:28', 'voltage': 221.682},
-        {'current': 5.18, 'power': 1144.8058999999998, 'timestamp': '2021-07-17T16:49:34', 'voltage': 221.005},
-        {'current': 5.614, 'power': 1222.7404279999998, 'timestamp': '2021-07-17T16:49:40', 'voltage': 217.802},
-        {'current': 5.385, 'power': 1182.45984, 'timestamp': '2021-07-17T16:49:46', 'voltage': 219.584}
+        {'current': 5.432, 'power': 1198.141672, 'timestamp': '2021-07-17T19:48:16', 'voltage': 220.571},
+        {'current': 5.555, 'power': 1224.45532, 'timestamp': '2021-07-17T19:48:22', 'voltage': 220.424},
+        {'current': 5.512, 'power': 1209.3328, 'timestamp': '2021-07-17T19:48:28', 'voltage': 219.4},
+        {'current': 5.628, 'power': 1232.13804, 'timestamp': '2021-07-17T19:48:34', 'voltage': 218.93},
+        {'current': 5.579, 'power': 1222.676903, 'timestamp': '2021-07-17T19:48:40', 'voltage': 219.157},
+        {'current': 5.676, 'power': 1253.84259, 'timestamp': '2021-07-17T19:48:46', 'voltage': 220.90249999999997},
+        {'current': 5.449, 'power': 1187.66404, 'timestamp': '2021-07-17T19:48:52', 'voltage': 217.96},
+        {'current': 5.239, 'power': 1149.656638, 'timestamp': '2021-07-17T19:48:58', 'voltage': 219.442},
+        {'current': 5.639, 'power': 1232.4711180000002, 'timestamp': '2021-07-17T19:49:22', 'voltage': 218.562},
+        {'current': 5.699, 'power': 1263.3657179999998, 'timestamp': '2021-07-17T19:49:28', 'voltage': 221.682},
+        {'current': 5.18, 'power': 1144.8058999999998, 'timestamp': '2021-07-17T19:49:34', 'voltage': 221.005},
+        {'current': 5.614, 'power': 1222.7404279999998, 'timestamp': '2021-07-17T19:49:40', 'voltage': 217.802},
+        {'current': 5.385, 'power': 1182.45984, 'timestamp': '2021-07-17T19:49:46', 'voltage': 219.584}
     ]
 
 
