@@ -1,5 +1,12 @@
 import pytest
-from src.database.db_migrator import DBMigrator, config
+
+from src import config
+from src.infrastructure.database.db_migrator import DBMigrator
+
+# Import steps for autoload
+from tests.integration.steps.user_register_steps import *  # noqa: F401, F403
+from tests.integration.steps.user_login_steps import *  # noqa: F401, F403
+from tests.integration.steps.device_steps import *  # noqa: F401, F403
 
 migrator = None
 DROP_DB = True
