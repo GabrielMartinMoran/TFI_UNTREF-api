@@ -1,14 +1,9 @@
-import jwt
-from src import config
 from src.app.routing.token_parser import TokenParser
-
-token_data = {
-    'username': 'test_user'
-}
+from src.app.utils.auth_info import AuthInfo
 
 
-def create_token(token_data: dict):
-    return 'Bearer ' + jwt.encode(token_data, config.APP_SECRET, algorithm=config.HASH_ALGORITHM)
+def create_token(user_email: dict):
+    return 'Bearer ' + AuthInfo(user_email).to_token()
 
 
 class MockedRequest:
@@ -19,42 +14,37 @@ class MockedRequest:
 
 
 def test_init_parses_tokens_when_called():
-    parser = TokenParser(MockedRequest(create_token(token_data)))
-    assert token_data == parser.token
+    parser = TokenParser(MockedRequest(create_token('test@test.com')))
+    assert parser.auth_info.user_email == 'test@test.com'
 
 
 def test_init_cant_parse_token_if_it_is_not_bearer():
-    parser = TokenParser(MockedRequest(jwt.encode(token_data, config.APP_SECRET, algorithm=config.HASH_ALGORITHM)))
-    assert parser.token is None
+    parser = TokenParser(MockedRequest(AuthInfo('test@test.com').to_token()))
+    assert parser.auth_info is None
 
 
 def test_init_cant_parse_token_if_encoded_token_is_not_valid():
     parser = TokenParser(MockedRequest('Bearer invalid_encoded_token'))
-    assert parser.token is None
+    assert parser.auth_info is None
 
 
 def test_init_cant_parse_token_if_auth_header_not_exists():
     request = MockedRequest(None)
     parser = TokenParser(request)
-    assert parser.token is None
+    assert parser.auth_info is None
 
 
 def test_init_cant_parse_token_if_auth_header_is_none():
     request = MockedRequest(None)
     parser = TokenParser(request)
-    assert parser.token is None
+    assert parser.auth_info is None
 
 
-def test_valid_token_returns_true_when_token_is_not_none():
-    parser = TokenParser(MockedRequest(create_token(token_data)))
+def test_valid_token_returns_true_when_token_is_valid():
+    parser = TokenParser(MockedRequest(create_token('test@test.com')))
     assert parser.valid_token()
 
 
-def test_valid_token_returns_false_when_token_is_none():
-    parser = TokenParser(MockedRequest('invalid token'))
+def test_valid_token_returns_false_when_token_is_not_valid():
+    parser = TokenParser(MockedRequest('invalid auth_info'))
     assert not parser.valid_token()
-
-
-def test_get_token_returns_token_attribute_when_called():
-    parser = TokenParser(MockedRequest(create_token(token_data)))
-    assert token_data == parser.get_token()

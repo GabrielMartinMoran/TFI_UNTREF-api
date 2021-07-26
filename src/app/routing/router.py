@@ -12,6 +12,8 @@ from .cors_solver import CORSSolver
 from src.app.utils.http.response import Response
 
 import src.app.controllers as controllers_module
+from ..utils.auth_info import AuthInfo
+from ..utils.http.request import Request
 
 EXCLUDED_CONTROLLERS = ['base_controller']
 
@@ -57,7 +59,7 @@ class Router:
         if routed_method is None:
             return self.error_response('Not found', 404)
 
-        # Si requiere token
+        # Si requiere auth_info
         token_parser = TokenParser(request)
         if routed_method.auth_required and not token_parser.valid_token():
             return self.error_response('Unauthorized', 401)
@@ -66,7 +68,7 @@ class Router:
         if len(splitted_path) > 2:
             params = splitted_path[2:]
         try:
-            return self._call_controller_method(routed_method, request, token_parser.get_token(), *params)
+            return self._call_controller_method(routed_method, request, token_parser.auth_info, *params)
         except TypeError as ex:
             print(
                 F'{console_colors.ERROR}An error has ocurred with message:'
@@ -141,14 +143,9 @@ class Router:
                         return cont_method
         return None
 
-    def _call_controller_method(self, method_route: MethodRoute, request, token, *method_params):
-        controller_instance = method_route.controller_class()
-        controller_instance.request = request
-        controller_instance.token = token
+    def _call_controller_method(self, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
+        internal_request = Request(request.method, request.path, request.json)
+        controller_instance = method_route.controller_class(**{'request': internal_request, 'auth_info': auth_info})
         method = getattr(controller_instance, method_route.method_name)
-        controller_instance.on_request()
         result: Response = method(*method_params)
-        json_response = result.jsonify()
-        controller_instance.response = json_response
-        controller_instance.after_request()
-        return json_response
+        return result.jsonify()

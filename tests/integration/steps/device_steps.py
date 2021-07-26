@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from pytest_bdd import given, then, when, parsers
 
 from src.app.controllers.devices_controller import DevicesController
+from src.app.utils.http.request import Request
 from src.domain.models.device import Device
 from src.domain.models.user import User
 from src.infrastructure.repositories.device_pg_repository import DevicePGRepository
@@ -14,7 +15,7 @@ from tests.model_stubs.measure_stub import MeasureStub
 def device_exists_for_logged_user(device_id: str):
     device_repository = DevicePGRepository()
     device = Device(name=device_id, device_id=device_id)
-    user_id = User.email_to_id(shared_variables.logged_user_token['email'])
+    user_id = User.email_to_id(shared_variables.logged_auth_info.user_email)
     if not device_repository.exists_for_user(device_id, user_id):
         device_repository.create(device, user_id)
 
@@ -32,34 +33,28 @@ def device_has_recent_measures(device_id: str):
 
 @when(parsers.cfparse('user tries to create device with name \'{device_name}\''))
 def try_user_login(device_name: str):
-    controller = DevicesController()
-    controller.token = shared_variables.logged_user_token
-    controller.get_json_body = lambda: {
-        'name': device_name
-    }
+    controller = DevicesController(request=Request.from_body({'name': device_name}),
+                                   auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.create()
 
 
 @when(parsers.cfparse('user tries to add a measure for device with id \'{device_id}\''))
 def try_add_valid_measure(device_id: str):
-    controller = DevicesController()
-    controller.token = shared_variables.logged_user_token
-    controller.get_json_body = lambda: MeasureStub().to_dict()
+    controller = DevicesController(request=Request.from_body(MeasureStub().to_dict()),
+                                   auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.add_measure(device_id)
 
 
 @when(parsers.cfparse('user tries to add an invalid measure for device with id \'{device_id}\''))
 def try_add_invalid_measure(device_id: str):
-    controller = DevicesController()
-    controller.token = shared_variables.logged_user_token
-    controller.get_json_body = lambda: MeasureStub(voltage=-200.0, current=-5.0).to_dict()
+    controller = DevicesController(request=Request.from_body(MeasureStub(voltage=-200.0, current=-5.0).to_dict()),
+                                   auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.add_measure(device_id)
 
 
 @when(parsers.cfparse('user tries to get measures for device with id \'{device_id}\''))
 def try_get_measures_for_device(device_id: str):
-    controller = DevicesController()
-    controller.token = shared_variables.logged_user_token
+    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
     minutes_interval = 10
     shared_variables.last_response = controller.get_measures(device_id, minutes_interval)
 

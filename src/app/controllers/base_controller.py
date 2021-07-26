@@ -1,40 +1,18 @@
-from typing import List, Any
-from src.app.utils.http.response import Response
+from src.app.utils.auth_info import AuthInfo
+from src.app.utils.http.request import Request
 from src.domain.models.user import User
 
 
 class BaseController:
 
-    def __init__(self):
-        self.request = None
-        self.token = None
-        self.response = None
-
-    def on_request(self):
-        pass
-
-    def after_request(self):
-        pass
-
-    def ok(self, data={}) -> Response:
-        return Response(200, data)
-
-    def created_ok(self, created_id: Any = None):
-        body = {}
-        if created_id:
-            body = {'id': str(created_id)}
-        return Response(201, body)
+    def __init__(self, request: Request, auth_info: AuthInfo = None):
+        self._request = request
+        self._auth_info = auth_info
 
     def get_json_body(self):
-        return self.request.json
+        return self._request.body
 
-    def error(self, message: str):
-        return Response(500, {'message': message})
-
-    def validation_error(self, validation_errors: List[str]) -> Response:
-        return Response(400, {'message': f'Validation error: {", ".join(validation_errors)}'})
-
-    def get_authenticated_user_id(self):
-        if self.token and 'email' in self.token:
-            return User.email_to_id(self.token['email'])
-        return None
+    def get_authenticated_user_id(self) -> str:
+        if not self._auth_info:
+            return None
+        return User.email_to_id(self._auth_info.user_email)

@@ -3,8 +3,7 @@ import pytest
 from src.app.routing.router import Router
 from src.app.utils import global_variables
 from src.app.routing import router, cors_solver
-import jwt
-from src import config
+from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.response import Response
 
 
@@ -12,6 +11,8 @@ class MockedRequest:
     def __init__(self, http_method: str, headers: dict = {}) -> None:
         self.method = http_method
         self.headers = headers
+        self.path = None
+        self.json = {}
 
 
 class MockedResponse:
@@ -27,10 +28,9 @@ Response.jsonify = lambda self: MockedResponse(self.body, self.status_code)
 
 class MockedController:
 
-    def __init__(self):
-        self.request = None
-        self.token = None
-        self.response = None
+    def __init__(self, request=None, auth_info=None):
+        self.request = request
+        self.auth_info = auth_info
 
     def mocked_http_endpoint(self):
         return Response(200, {'message': 'OK'})
@@ -71,8 +71,8 @@ def discover_controllers_mocked(router_instance):
     return [MockedController]
 
 
-def create_token(token_data: dict):
-    return 'Bearer ' + jwt.encode(token_data, config.APP_SECRET, algorithm=config.HASH_ALGORITHM)
+def create_token(user_email: str):
+    return 'Bearer ' + AuthInfo(user_email).to_token()
 
 
 # Mockeamos la funcion make_response importado desde flask
@@ -178,7 +178,7 @@ def test_route_returns_error_response_when_token_required_and_not_provided(route
 
 
 def test_route_returns_ok_response_when_token_required_and_provided(router):
-    request = MockedRequest('GET', {'Authorization': create_token({'username': 'test_user'})})
+    request = MockedRequest('GET', {'Authorization': create_token('test_user@test.com')})
     actual = router.route(request, 'mocked/mocked_http_endpoint_with_auth_required')
     assert actual.body['message'] == 'OK'
     assert actual.code == 200

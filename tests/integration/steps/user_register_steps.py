@@ -1,6 +1,7 @@
 from pytest_bdd import given, then, when, parsers
 
 from src.app.controllers.auth_controller import AuthController
+from src.app.utils.http.request import Request
 from tests.integration.utils import shared_variables
 
 
@@ -22,12 +23,11 @@ def user_is_already_registered(email):
 @when(parsers.cfparse(
     'user tries to register with username \'{username}\', email \'{email}\' and password \'{password}\''))
 def try_register_user(username, email, password):
-    controller = AuthController()
-    controller.get_json_body = lambda: {
+    controller = AuthController(Request.from_body({
         'username': username,
         'email': email,
         'password': password
-    }
+    }))
     shared_variables.last_response = controller.register()
 
 

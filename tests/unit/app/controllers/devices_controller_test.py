@@ -1,45 +1,47 @@
-import pytest
 from src.app.controllers.devices_controller import DevicesController
+from src.app.utils.http.request import Request
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
+from tests.model_stubs.measure_stub import MeasureStub
 
 
-@pytest.fixture
-def controller():
-    return DevicesController()
-
-
-def test_device_controller_instantiate_device_repository_when_instantiated(controller):
+def test_device_controller_instantiate_device_repository_when_instantiated():
+    controller = DevicesController(None)
     assert controller.device_repository is not None
 
 
-def test_device_controller_instantiate_measure_repository_when_instantiated(controller):
+def test_device_controller_instantiate_measure_repository_when_instantiated():
+    controller = DevicesController(None)
     assert controller.measure_repository is not None
 
 
-def test_generate_ble_id_generates_unique_ble_id(controller):
+"""
+def test_generate_ble_id_generates_unique_ble_id():
+    controller = DevicesController(None)
     actual = controller.generate_ble_id()
     assert actual.status_code == 200
     assert isinstance(actual.body['device_id'], str)
+"""
 
 
-def test_create_returns_error_response_when_device_is_not_valid(controller):
-    controller.get_json_body = lambda: {'name': None}
+def test_create_returns_error_response_when_device_is_not_valid():
+    controller = DevicesController(Request.from_body({'name': None}))
     actual = controller.create()
     assert actual.status_code == 400
     assert 'Validation error' in actual.body['message']
 
 
-def test_create_returns_error_response_when_device_with_same_ble_id_exists_for_user(controller):
-    controller.get_json_body = lambda: {'name': 'test_device', 'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c905'}
+def test_create_returns_error_response_when_device_with_same_ble_id_exists_for_user():
+    controller = DevicesController(
+        Request.from_body({'name': 'test_device', 'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c905'}))
     controller.device_repository.exists_for_user = lambda ble_id, user_id: True
     actual = controller.create()
-    assert actual.status_code == 500
+    assert actual.status_code == 409
     assert actual.body['message'] == 'There is another device with the same device_id for logged user'
 
 
-def test_create_returns_ok_response_when_device_was_created_successfully(controller):
-    controller.get_json_body = lambda: {'name': 'test_device'}
+def test_create_returns_ok_response_when_device_was_created_successfully():
+    controller = DevicesController(Request.from_body({'name': 'test_device'}))
     controller.device_repository.exists_for_user = lambda device_id, user_id: False
     controller.device_repository.create = lambda device, user_id: device.id
     actual = controller.create()
@@ -47,38 +49,45 @@ def test_create_returns_ok_response_when_device_was_created_successfully(control
     assert isinstance(actual.body['id'], str)
 
 
-def test_add_measure_returns_error_response_when_measure_is_not_valid(controller):
-    controller.get_json_body = lambda: {'timestamp': 100000, 'voltage': 220.0, 'current': None}
+def test_add_measure_returns_error_response_when_measure_is_not_valid():
+    measure = MeasureStub(current=None)
+    controller = DevicesController(Request.from_body({
+        'timestamp': measure.timestamp.isoformat(),
+        'voltage': measure.voltage,
+        'current': None
+    }))
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
     assert 'Validation error' in actual.body['message']
 
 
-def test_add_measure_returns_error_response_when_device_is_not_valid_for_user(controller):
+def test_add_measure_returns_error_response_when_device_is_not_valid_for_user():
+    controller = DevicesController(Request.from_body(MeasureStub().to_dict()))
     controller.device_repository.exists_for_user = lambda ble_id, user_id: False
-    controller.get_json_body = lambda: {'timestamp': 100000, 'voltage': 220.0, 'current': 0.5}
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
-    assert actual.status_code == 500
+    assert actual.status_code == 400
     assert actual.body['message'] == 'Device identifier is not valid for logged user'
 
 
-def test_add_measure_returns_ok_response_when_measure_was_registered(controller):
+def test_add_measure_returns_ok_response_when_measure_was_registered():
+    controller = DevicesController(Request.from_body(MeasureStub().to_dict()))
     controller.device_repository.exists_for_user = lambda device_id, user_id: True
     controller.measure_repository.create = lambda measure, device_id: None
-    controller.get_json_body = lambda: {'timestamp': 100000, 'voltage': 220.0, 'current': 0.5}
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 201
     assert actual.body == {}
 
 
-def test_measures_returns_error_response_when_device_is_not_valid_for_user(controller):
+def test_measures_returns_error_response_when_device_is_not_valid_for_user():
+    controller = DevicesController(None)
     controller.device_repository.exists_for_user = lambda ble_id, user_id: False
     actual = controller.get_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905', 5)
-    assert actual.status_code == 500
+    assert actual.status_code == 400
     assert actual.body['message'] == 'Device identifier is not valid for logged user'
 
 
-def test_measures_returns_ok_response_when_could_summarize_measures(controller):
+def test_measures_returns_ok_response_when_could_summarize_measures():
+    controller = DevicesController(None)
     controller.device_repository.exists_for_user = lambda device_id, user_id: True
     controller.measure_repository.get_from_last_minutes = lambda device_id, time_interval: [
         Measure(1626551296, 220.571, 5.432),
@@ -126,7 +135,8 @@ def test_measures_returns_ok_response_when_could_summarize_measures(controller):
     ]
 
 
-def test_get_all_for_user_returns_ok_response_with_user_devices(controller):
+def test_get_all_for_user_returns_ok_response_with_user_devices():
+    controller = DevicesController(None)
     controller.device_repository.get_user_devices = lambda user_id: [
         Device('device_1', '5c7b5ffc-90e7-1b85-f041-0595c912c905'),
         Device('device_2', '5c7b5ffc-90e7-1b85-f041-0595c912c906'),
