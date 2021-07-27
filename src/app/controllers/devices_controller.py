@@ -41,8 +41,7 @@ class DevicesController(BaseController):
         except DeviceAlreadyExistentException:
             return Response.conflict('There is another device with the same device_id for logged user')
         except Exception as e:
-            print(e)
-            Logger.get_logger(__file__).error(e)
+            Logger.error(e)
             return Response.server_error('An error has occurred while creating the device')
         return Response.created_successfully(device_id)
 
@@ -57,8 +56,7 @@ class DevicesController(BaseController):
         except UnregisteredDeviceException:
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
-            print(e)
-            Logger.get_logger(__file__).error(e)
+            Logger.error(e)
             return Response.server_error('An error has ocurred while creating the measure')
         return Response.created_successfully()
 
@@ -70,7 +68,7 @@ class DevicesController(BaseController):
         except UnregisteredDeviceException:
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
-            print(e)
+            Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain device measures')
         return Response.success([x.to_dict() for x in measures])
 
@@ -80,6 +78,6 @@ class DevicesController(BaseController):
         try:
             devices = devices_retriever.get_user_devices(self.get_authenticated_user_id())
         except Exception as e:
-            print(e)
+            Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain logged user devices')
         return Response.success([device.to_dict() for device in devices])

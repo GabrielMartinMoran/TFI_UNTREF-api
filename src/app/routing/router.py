@@ -95,7 +95,7 @@ class Router:
         global_variables.ROUTER_INSTANCE = self
 
     def _map_routes(self):
-        Logger.get_logger(__file__).debug("Mapeo de rutas iniciado...")
+        Logger.debug("Mapeo de rutas iniciado...")
         print(F'\n{console_colors.INFO}Comenzando el mapeo de rutas:{console_colors.ENDC}')
         # self.http_methods se llena al cargar los controlles ya que importa los modulos
         for controller in self._discover_controllers():
@@ -105,7 +105,7 @@ class Router:
                 if method['class_name'] == controller_route.controller_name():
                     controller_route.add_method(method['method_name'], method['type'], method['alias'],
                                                 method['auth_required'])
-        Logger.get_logger(__file__).debug("Mapeo de rutas finalizado...")
+        Logger.debug("Mapeo de rutas finalizado...")
 
     def _discover_controllers_modules(self):
         controllers_path = os.path.dirname(controllers_module.__file__)
@@ -119,10 +119,10 @@ class Router:
         try:
             controller_class = locate(class_path)
         except Exception as e:
-            print(e)
+            Logger.error(e)
             print(F' ⚠ {console_colors.WARNING}No se pudo importar el archivo {module_name}. '
                   F'Ignorando mapeo del controlador{console_colors.ENDC}')
-            Logger.get_logger(__file__).error(e)
+            Logger.error(e)
             return None
         if not controller_class:
             print(F' ⚠ {console_colors.WARNING}No se hallo la clase del controllador {class_name}'

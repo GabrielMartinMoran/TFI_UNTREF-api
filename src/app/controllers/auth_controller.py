@@ -1,9 +1,12 @@
 from src.app.controllers.base_controller import BaseController
 from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
+from src.app.utils.logging.logger import Logger
 from src.domain.exceptions.email_already_registered_exception import EmailAlreadyRegisteredException
 from src.domain.exceptions.invalid_login_exception import InvalidLoginException
+from src.domain.exceptions.invalid_user_exception import InvalidUserException
 from src.domain.services.auth.user_logger import UserLogger
+from src.domain.services.auth.user_obtainer import UserObtainer
 from src.domain.services.auth.user_registerer import UserRegisterer
 from src.app.utils.http import http_methods
 from src.app.utils.http.response import Response
@@ -29,7 +32,7 @@ class AuthController(BaseController):
         except EmailAlreadyRegisteredException:
             return Response.conflict('User with same email already exists')
         except Exception as e:
-            print(e)
+            Logger.error(e)
             return Response.server_error('An error has occurred while creating user')
         return Response.created_successfully()
 
@@ -43,16 +46,18 @@ class AuthController(BaseController):
         except InvalidLoginException:
             return Response.bad_request(message='Invalid email or password')
         except Exception as e:
-            print(e)
+            Logger.error(e)
             return Response.server_error('An error has occurred while logging in user')
         return Response.success({'auth_info': auth_info.to_token()})
 
-    """
-    @route(http_methods.GET, auth_required=True)
+    @route(http_methods.GET, alias='get_data', auth_required=True)
     def get_logged_user_data(self) -> Response:
-        user_id = self.get_authenticated_user_id()
-        user = self.user_repository.get_by_id(user_id, get_avatar=True)
-        if not user:
-            return self.error('Invalid user')
-        return self.ok(user.to_dict())
-    """
+        user_obtainer = UserObtainer(self.user_repository)
+        try:
+            user = user_obtainer.get_user(self.get_authenticated_user_id())
+        except InvalidUserException:
+            return Response.bad_request(message='Invalid user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while trying to obtain user data')
+        return Response.success(user.to_dict())

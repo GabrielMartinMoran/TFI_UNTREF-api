@@ -22,48 +22,47 @@ router = Router()
 @app.route(F'/{Router.get_base_url()}/<path:path>', methods=http_methods.get_methods_list())
 @compress.compressed()
 def route(path):
-    Logger.get_logger(__file__).debug("router route: %s", path)
+    Logger.info(f'Routing to: {path}')
     return router.route(request, path)
 
 
 @app.route('/', methods=[http_methods.GET])
 @compress.compressed()
 def root():
-    Logger.get_logger(__file__).debug("index route")
+    Logger.info('Index route')
     return send_from_directory(config.CLIENT_APP_FOLDER, 'index.html')
 
 
 @app.route('/<path:path>', methods=[http_methods.GET])
 @compress.compressed()
 def static_file(path):
-    Logger.get_logger(__file__).debug("static file: %s", path)
+    Logger.info(f'Returning static file: {path}')
     return send_from_directory(config.CLIENT_APP_FOLDER, path)
 
 
 @app.route('/', defaults={'path': ''}, methods=http_methods.get_methods_list())
 @app.route('/<path:path>', methods=http_methods.get_methods_list())
 def not_found(path):
-    print(F"{path} not found")
-    Logger.get_logger(__file__).info("Not found route: %s", path)
+    Logger.info("Route not found: %s", path)
     return router.error_response('Not found!', 404)
 
 
 def on_app_stopped():
-    Logger.get_logger(__file__).info("App stopped")
+    Logger.info("App stopped")
 
 
 atexit.register(on_app_stopped)
 
 
-def on_starting(server):
+def on_starting(server=None):
     router.print_routemap()
     LogoPrinter.print_logo()
     DBMigrator().run_migrations()
-    Logger.get_logger(__file__).info("App started")
+    Logger.info("App started")
 
 
 def run():
-    on_starting(None)
+    on_starting()
     app.run(debug=config.APP_RUN_DEBUG_MODE,
             use_reloader=config.APP_USE_RELOADER,
             port=config.APP_PORT)
