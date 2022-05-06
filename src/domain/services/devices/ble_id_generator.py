@@ -1,5 +1,6 @@
-import datetime
 import random
+
+from src.common import dates
 
 
 class BleIdGenerator:
@@ -21,7 +22,7 @@ class BleIdGenerator:
 
     @staticmethod
     def __get_hextimestamp():
-        timestamp = datetime.datetime.now(datetime.timezone.utc).timestamp()
+        timestamp = dates.now().timestamp()
         full_int_timestamp = int(timestamp * BleIdGenerator.TIMESTAMP_MULTIPLIER)
         return BleIdGenerator.__to_hex_str(full_int_timestamp)
 

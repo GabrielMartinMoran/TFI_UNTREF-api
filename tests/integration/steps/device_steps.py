@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pytest_bdd import given, then, when, parsers
 
 from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
+from src.common import dates
 from src.domain.models.device import Device
 from src.domain.models.user import User
 from src.infrastructure.repositories.device_pg_repository import DevicePGRepository
@@ -23,18 +24,19 @@ def device_exists_for_logged_user(device_id: str):
 @given(parsers.cfparse('device with id \'{device_id}\' has recent measures'))
 def device_has_recent_measures(device_id: str):
     measure_repository = MeasurePGRepository()
-
     minutes_interval = 0.0
     while minutes_interval <= 10:  # Until 10 minutes
-        measure = MeasureStub(timestamp=datetime.now() - timedelta(minutes=minutes_interval))
+        measure = MeasureStub(timestamp=dates.now() - timedelta(minutes=minutes_interval))
         measure_repository.create(measure, device_id)
         minutes_interval += 0.5
 
 
 @when(parsers.cfparse('user tries to create device with name \'{device_name}\''))
 def try_user_login(device_name: str):
-    controller = DevicesController(request=Request.from_body({'name': device_name}),
-                                   auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=Request.from_body({
+        'name': device_name
+    }),
+        auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.create()
 
 
@@ -47,8 +49,13 @@ def try_add_valid_measure(device_id: str):
 
 @when(parsers.cfparse('user tries to add an invalid measure for device with id \'{device_id}\''))
 def try_add_invalid_measure(device_id: str):
-    controller = DevicesController(request=Request.from_body(MeasureStub(voltage=-200.0, current=-5.0).to_dict()),
-                                   auth_info=shared_variables.logged_auth_info)
+    measure_dict = {
+        **MeasureStub().to_dict(), **{
+            'voltage': -200.0,
+            'current': -5.0
+        }
+    }
+    controller = DevicesController(request=Request.from_body(measure_dict), auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.add_measure(device_id)
 
 

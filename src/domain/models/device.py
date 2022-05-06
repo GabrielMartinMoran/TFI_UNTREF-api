@@ -8,7 +8,7 @@ from src.domain.models.base_model import BaseModel
 
 class Device(BaseModel):
     MIN_NAME_LENGTH = 1
-    MAX_NAME_LENGTH = 32
+    MAX_NAME_LENGTH = 50
     BLE_ID_LENGTH = 36
 
     MODEL_VALIDATORS = [
@@ -17,13 +17,13 @@ class Device(BaseModel):
     ]
 
     def __init__(self, name: str, device_id: str = None, active: bool = False, turned_on: bool = False,
-                 measures: List[Measure] = []):
-        super().__init__()
+                 measures: List[Measure] = None, *args, **kwargs) -> None:
         self._name = name
         self._id = device_id.lower() if device_id else IdGenerator.generate_unique_id()
         self._active = active
         self._turned_on = turned_on
-        self._measures = measures
+        self._measures = measures or []
+        super().__init__(*args, **kwargs)
 
     @property
     def name(self) -> str:
@@ -56,13 +56,12 @@ class Device(BaseModel):
 
     @staticmethod
     def from_dict(data: dict, set_id=True) -> 'Device':
-        model = Device(
+        return Device(
             name=data.get('name'),
-            device_id=data.get('id') if data.get('id') and set_id else None,
+            device_id=data.get('device_id', data.get('id')) if data.get('device_id',
+                                                                        data.get('id')) and set_id else None,
             active=data.get('active', False),
             turned_on=data.get('turned_on', False),
-            measures=[Measure.from_dict(x) for x in data.get('measures', [])]
+            measures=[Measure.from_dict(x) for x in data.get('measures', [])],
+            created_date=data.get('created_date')
         )
-        if 'created_date' in data:
-            model.created_date = data.get('created_date')
-        return model

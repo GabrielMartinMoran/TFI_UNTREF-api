@@ -21,7 +21,7 @@ def user_is_logged_in():
         'email': user_email,
         'password': user_password
     }))
-    encoded_token = auth_controller.login().body['auth_info']
+    encoded_token = auth_controller.login().body['token']
     shared_variables.logged_auth_info = AuthInfo.from_token(encoded_token)
 
 
@@ -37,7 +37,7 @@ def try_user_login(email: str, password: str):
 @then('user logs in successfully')
 def user_login_successfully():
     assert shared_variables.last_response.status_code == 200
-    assert len(shared_variables.last_response.body['auth_info']) > 0
+    assert len(shared_variables.last_response.body['token']) > 0
 
 
 @then('user login fails')

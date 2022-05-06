@@ -13,6 +13,7 @@ class MockedRequest:
         self.headers = headers
         self.path = None
         self.json = {}
+        self.data = ''
 
 
 class MockedResponse:

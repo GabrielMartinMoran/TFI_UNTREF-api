@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Optional, Type, cast
 import os
 import pkgutil
 from pydoc import locate
 from flask import make_response
+
+from ..controllers.base_controller import BaseController
 from ..utils import global_variables, console_colors
 from src.app.utils.logging.logger import Logger
 from .controller_route import ControllerRoute
@@ -35,7 +37,9 @@ class Router:
 
     @staticmethod
     def error_response(message, code):
-        return make_response({'message': message}, code)
+        return make_response({
+            'message': message
+        }, code)
 
     @staticmethod
     def register_http_method(http_method) -> None:
@@ -43,9 +47,9 @@ class Router:
             global_variables.ROUTER_INSTANCE.http_methods.append(http_method)
 
     def route(self, request, path):
-        splitted_path = path.split('/')  # Aunque sea un string vacio, el primer elemento siempre existe
-        controller_name = splitted_path[0]
-        method_name = F'/{splitted_path[1]}' if len(splitted_path) > 1 else '/'
+        split_path = path.split('/')  # Aunque sea un string vacio, el primer elemento siempre existe
+        controller_name = split_path[0]
+        method_name = F'/{split_path[1]}' if len(split_path) > 1 else '/'
 
         # CORS
         cors_solver = CORSSolver(request)
@@ -65,8 +69,8 @@ class Router:
             return self.error_response('Unauthorized', 401)
 
         params = []
-        if len(splitted_path) > 2:
-            params = splitted_path[2:]
+        if len(split_path) > 2:
+            params = split_path[2:]
         try:
             return self._call_controller_method(routed_method, request, token_parser.auth_info, *params)
         except TypeError as ex:
@@ -107,17 +111,19 @@ class Router:
                                                 method['auth_required'])
         Logger.debug("Mapeo de rutas finalizado...")
 
-    def _discover_controllers_modules(self):
+    @classmethod
+    def _discover_controllers_modules(cls):
         controllers_path = os.path.dirname(controllers_module.__file__)
         controllers_modules = [name for _, name, _ in pkgutil.iter_modules([controllers_path])]
         return [mod for mod in controllers_modules if mod not in EXCLUDED_CONTROLLERS]
 
-    def _get_controller_class(self, module_name):
+    @classmethod
+    def _get_controller_class(cls, module_name: str) -> Optional[Type[BaseController]]:
         controllers_rel_path = os.path.relpath(controllers_module.__file__).split('/')[:-1]
         class_name = module_name.title().replace('_', '')
         class_path = '.'.join(controllers_rel_path + [module_name, class_name])
         try:
-            controller_class = locate(class_path)
+            controller_class = cast(Type[BaseController], locate(class_path))
         except Exception as e:
             Logger.error(e)
             print(F' ⚠ {console_colors.WARNING}No se pudo importar el archivo {module_name}. '
@@ -131,21 +137,25 @@ class Router:
             return None
         return controller_class
 
-    def _discover_controllers(self):
+    def _discover_controllers(self) -> List[Type[BaseController]]:
         return [self._get_controller_class(controller_module) for controller_module in
                 self._discover_controllers_modules() if controllers_module]
 
-    def _get_routed_method(self, controller, method, http_type) -> bool:
+    def _get_routed_method(self, controller_name: str, method: str, http_method: str) -> Optional[MethodRoute]:
         for cont_route in self.routes:
-            if cont_route.route() == controller:
+            if cont_route.route() == controller_name:
                 for cont_method in cont_route.methods:
-                    if cont_method.get_path() == method and cont_method.http_type == http_type:
+                    if cont_method.get_path() == method and cont_method.http_type == http_method:
                         return cont_method
         return None
 
-    def _call_controller_method(self, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
-        internal_request = Request(request.method, request.path, request.json)
-        controller_instance = method_route.controller_class(**{'request': internal_request, 'auth_info': auth_info})
+    @classmethod
+    def _call_controller_method(cls, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
+        internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {})
+        controller_instance = method_route.controller_class(**{
+            'request': internal_request,
+            'auth_info': auth_info
+        })
         method = getattr(controller_instance, method_route.method_name)
         result: Response = method(*method_params)
         return result.jsonify()

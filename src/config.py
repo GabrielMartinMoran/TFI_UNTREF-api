@@ -64,4 +64,4 @@ class ErrorCodes:
 # --------------------- #
 # -MEASURES SUMMARIZER- #
 # --------------------- #
-MAX_SUMMARIZED_MEASURES_TO_SHOW = 50
+MAX_SUMMARIZED_MEASURES_TO_SHOW = 25

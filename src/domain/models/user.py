@@ -17,12 +17,13 @@ class User(BaseModel):
         StringValidator('hashed_password', message='password is not valid'),
     ]
 
-    def __init__(self, username: str, email: str, password: str = None, hashed_password: str = None):
-        super().__init__()
+    def __init__(self, username: str, email: str, password: str = None, hashed_password: str = None, *args,
+                 **kwargs) -> None:
         self._username = username
         self._email = email.lower() if email else None
         self._password = password
         self._hashed_password = hash_password(password) if password else hashed_password
+        super().__init__(*args, **kwargs)
 
     @property
     def username(self) -> str:
@@ -55,11 +56,10 @@ class User(BaseModel):
             username=data.get('username'),
             email=data.get('email'),
             password=data.get('password'),
-            hashed_password=data.get('hashed_password')
+            hashed_password=data.get('hashed_password'),
+            created_date=data.get('created_date')
         )
         model.avatar = data.get('avatar')
-        if 'created_date' in data:
-            model._created_date = data.get('created_date')
         return model
 
     @staticmethod

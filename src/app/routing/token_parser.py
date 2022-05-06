@@ -21,9 +21,8 @@ class TokenParser:
                 return
             token = self.__remove_token_type(token)
             self._auth_info = AuthInfo.from_token(token)
-            return
         except Exception:
-            return
+            pass
 
     def __get_token_from_header(self) -> str:
         return self._request.headers[self.AUTH_HEADER]

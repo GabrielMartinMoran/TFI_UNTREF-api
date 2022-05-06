@@ -25,7 +25,9 @@ def test_generate_ble_id_generates_unique_ble_id():
 
 
 def test_create_returns_error_response_when_device_is_not_valid():
-    controller = DevicesController(Request.from_body({'name': None}))
+    controller = DevicesController(Request.from_body({
+        'name': None
+    }))
     actual = controller.create()
     assert actual.status_code == 400
     assert 'Validation error' in actual.body['message']
@@ -33,7 +35,10 @@ def test_create_returns_error_response_when_device_is_not_valid():
 
 def test_create_returns_error_response_when_device_with_same_ble_id_exists_for_user():
     controller = DevicesController(
-        Request.from_body({'name': 'test_device', 'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c905'}))
+        Request.from_body({
+            'name': 'test_device',
+            'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c905'
+        }))
     controller.device_repository.exists_for_user = lambda ble_id, user_id: True
     actual = controller.create()
     assert actual.status_code == 409
@@ -41,7 +46,9 @@ def test_create_returns_error_response_when_device_with_same_ble_id_exists_for_u
 
 
 def test_create_returns_ok_response_when_device_was_created_successfully():
-    controller = DevicesController(Request.from_body({'name': 'test_device'}))
+    controller = DevicesController(Request.from_body({
+        'name': 'test_device'
+    }))
     controller.device_repository.exists_for_user = lambda device_id, user_id: False
     controller.device_repository.create = lambda device, user_id: device.id
     actual = controller.create()
@@ -50,7 +57,7 @@ def test_create_returns_ok_response_when_device_was_created_successfully():
 
 
 def test_add_measure_returns_error_response_when_measure_is_not_valid():
-    measure = MeasureStub(current=None)
+    measure = MeasureStub()
     controller = DevicesController(Request.from_body({
         'timestamp': measure.timestamp.isoformat(),
         'voltage': measure.voltage,
@@ -116,23 +123,59 @@ def test_measures_returns_ok_response_when_could_summarize_measures():
         Measure(1626552281, 221.918, 5.602),
         Measure(1626552286, 219.383, 5.404),
     ]
+    expected = [
+        {
+            'current': 5.43,
+            'power': 1197.7,
+            'timestamp': '2021-07-17T19:48:16+00:00',
+            'voltage': 220.57
+        },
+        {
+            'current': 5.53,
+            'power': 1216.1,
+            'timestamp': '2021-07-17T19:48:28+00:00',
+            'voltage': 219.91
+        },
+        {
+            'current': 5.61,
+            'power': 1228.87,
+            'timestamp': '2021-07-17T19:48:40+00:00',
+            'voltage': 219.05
+        },
+        {
+            'current': 5.6,
+            'power': 1231.55,
+            'timestamp': '2021-07-17T19:48:52+00:00',
+            'voltage': 219.92
+        },
+        {
+            'current': 5.24,
+            'power': 1149.87,
+            'timestamp': '2021-07-17T19:49:04+00:00',
+            'voltage': 219.44
+        },
+        {
+            'current': 5.67,
+            'power': 1248.08,
+            'timestamp': '2021-07-17T19:49:28+00:00',
+            'voltage': 220.12
+        },
+        {
+            'current': 5.39,
+            'power': 1182.57,
+            'timestamp': '2021-07-17T19:49:40+00:00',
+            'voltage': 219.4
+        },
+        {
+            'current': 5.38,
+            'power': 1181.34,
+            'timestamp': '2021-07-17T19:49:52+00:00',
+            'voltage': 219.58
+        }
+    ]
     actual = controller.get_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905', 5)
     assert actual.status_code == 200
-    assert actual.body == [
-        {'current': 5.432, 'power': 1198.141672, 'timestamp': '2021-07-17T19:48:16', 'voltage': 220.571},
-        {'current': 5.555, 'power': 1224.45532, 'timestamp': '2021-07-17T19:48:22', 'voltage': 220.424},
-        {'current': 5.512, 'power': 1209.3328, 'timestamp': '2021-07-17T19:48:28', 'voltage': 219.4},
-        {'current': 5.628, 'power': 1232.13804, 'timestamp': '2021-07-17T19:48:34', 'voltage': 218.93},
-        {'current': 5.579, 'power': 1222.676903, 'timestamp': '2021-07-17T19:48:40', 'voltage': 219.157},
-        {'current': 5.676, 'power': 1253.84259, 'timestamp': '2021-07-17T19:48:46', 'voltage': 220.90249999999997},
-        {'current': 5.449, 'power': 1187.66404, 'timestamp': '2021-07-17T19:48:52', 'voltage': 217.96},
-        {'current': 5.239, 'power': 1149.656638, 'timestamp': '2021-07-17T19:48:58', 'voltage': 219.442},
-        {'current': 5.639, 'power': 1232.4711180000002, 'timestamp': '2021-07-17T19:49:22', 'voltage': 218.562},
-        {'current': 5.699, 'power': 1263.3657179999998, 'timestamp': '2021-07-17T19:49:28', 'voltage': 221.682},
-        {'current': 5.18, 'power': 1144.8058999999998, 'timestamp': '2021-07-17T19:49:34', 'voltage': 221.005},
-        {'current': 5.614, 'power': 1222.7404279999998, 'timestamp': '2021-07-17T19:49:40', 'voltage': 217.802},
-        {'current': 5.385, 'power': 1182.45984, 'timestamp': '2021-07-17T19:49:46', 'voltage': 219.584}
-    ]
+    assert actual.body == expected
 
 
 def test_get_all_for_user_returns_ok_response_with_user_devices():
@@ -145,10 +188,25 @@ def test_get_all_for_user_returns_ok_response_with_user_devices():
     actual = controller.get_all_for_user()
     assert actual.status_code == 200
     assert actual.body == [
-        {'active': False, 'id': '5c7b5ffc-90e7-1b85-f041-0595c912c905', 'measures': [],
-         'name': 'device_1', 'turned_on': False},
-        {'active': False, 'id': '5c7b5ffc-90e7-1b85-f041-0595c912c906', 'measures': [],
-         'name': 'device_2', 'turned_on': False},
-        {'active': False, 'id': '5c7b5ffc-90e7-1b85-f041-0595c912c907', 'measures': [],
-         'name': 'device_3', 'turned_on': False}
+        {
+            'active': False,
+            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c905',
+            'measures': [],
+            'name': 'device_1',
+            'turned_on': False
+        },
+        {
+            'active': False,
+            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c906',
+            'measures': [],
+            'name': 'device_2',
+            'turned_on': False
+        },
+        {
+            'active': False,
+            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c907',
+            'measures': [],
+            'name': 'device_3',
+            'turned_on': False
+        }
     ]

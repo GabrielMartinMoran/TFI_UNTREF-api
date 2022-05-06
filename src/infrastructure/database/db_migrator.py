@@ -1,10 +1,11 @@
 import sys
 import os
-import datetime
 from src.app.utils import console_colors
 from src import config
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+from src.common import dates
 from src.infrastructure.database.migrations.migration_001 import Migration001
 
 
@@ -119,7 +120,7 @@ class DBMigrator:
     def update_to_last_migration(self, last_migration_number: int, cursor: object):
         cursor.execute(f"UPDATE AppInfo SET value = '{last_migration_number}' WHERE "
                        f"key = '{config.LAST_MIGRATION_APP_INFO_KEY}'")
-        cursor.execute(f"UPDATE AppInfo SET value = '{datetime.datetime.now()}' WHERE "
+        cursor.execute(f"UPDATE AppInfo SET value = '{dates.now()}' WHERE "
                        f"key = '{config.LAST_MIGRATION_APP_INFO_DATE}'")
 
     def get_migration_filename(self, migration_class):

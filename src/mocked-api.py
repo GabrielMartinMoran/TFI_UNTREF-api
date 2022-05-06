@@ -3,8 +3,9 @@ from flask_cors import CORS
 from threading import Thread
 import time
 import random
-from datetime import datetime
 from werkzeug.serving import WSGIRequestHandler
+
+from src.common import dates
 
 
 class Device:
@@ -66,7 +67,7 @@ def data_generating_thread():
                 Measure(
                     REF_VOLTAGE + random.uniform(-10, 10),
                     random.uniform(0, 1),
-                    int(datetime.now().timestamp())  # * 1000)
+                    int(dates.now().timestamp())  # * 1000)
                 )
             )
         time.sleep(5)

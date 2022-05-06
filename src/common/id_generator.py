@@ -1,6 +1,7 @@
-import datetime
 import random
 import hashlib
+
+from src.common import dates
 
 
 class IdGenerator:
@@ -33,7 +34,7 @@ class IdGenerator:
 
     @staticmethod
     def _get_hex_timestamp() -> str:
-        timestamp = datetime.datetime.now(datetime.timezone.utc).timestamp()
+        timestamp = dates.now().timestamp()
         full_int_timestamp = int(timestamp * IdGenerator._TIMESTAMP_MULTIPLIER)
         return IdGenerator._int_to_hex_str(full_int_timestamp)
 

@@ -1,28 +1,38 @@
+from decimal import Decimal
 from typing import Union
 
 from dateutil import parser
 from datetime import datetime
 
+from src.common import dates
+from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.validators.datetime_validator import DatetimeValidator
 from src.validators.float_validator import FloatValidator
 from src.domain.models.base_model import BaseModel
 
 
 class Measure(BaseModel):
+    _ROUND_DECIMALS = 2
+
     MODEL_VALIDATORS = [
         DatetimeValidator('timestamp'),
-        FloatValidator('voltage', min=0),
-        FloatValidator('current', min=0),
+        FloatValidator('voltage', min_value=0),
+        FloatValidator('current', min_value=0),
     ]
 
     def __init__(self, timestamp: Union[datetime, int, str], voltage: Union[int, float],
-                 current: Union[int, float]):
-        super().__init__()
+                 current: Union[int, float, Decimal], *args, **kwargs):
         self._timestamp = self._format_timestamp(timestamp) if timestamp else None
-        self._voltage = float(voltage) if voltage else None
-        self._current = float(current) if current else None
+        if not isinstance(voltage, (float, int, Decimal)):
+            raise ModelValidationException('voltage must be a valid float or int')
+        self._voltage = float(voltage)
+        if not isinstance(current, (float, int, Decimal)):
+            raise ModelValidationException('current must be a valid float or int')
+        self._current = float(current)
+        super().__init__(*args, **kwargs)
 
-    def _format_timestamp(self, timestamp: Union[datetime, int, str]) -> datetime:
+    @classmethod
+    def _format_timestamp(cls, timestamp: Union[datetime, int, str]) -> datetime:
         if isinstance(timestamp, datetime):
             return timestamp
         if isinstance(timestamp, str):
@@ -32,24 +42,24 @@ class Measure(BaseModel):
         raise ValueError('invalid timestamp')
 
     @property
-    def timestamp(self):
+    def timestamp(self) -> datetime:
         return self._timestamp
 
     @property
-    def voltage(self):
-        return self._voltage
+    def voltage(self) -> float:
+        return round(self._voltage, self._ROUND_DECIMALS)
 
     @property
-    def current(self):
-        return self._current
+    def current(self) -> float:
+        return round(self._current, self._ROUND_DECIMALS)
 
     @property
-    def power(self):
-        return self.voltage * self.current
+    def power(self) -> float:
+        return round(self.voltage * self.current, self._ROUND_DECIMALS)
 
     def to_dict(self) -> dict:
         return {
-            'timestamp': self.timestamp.isoformat(),
+            'timestamp': dates.to_utc_isostring(self.timestamp),
             'voltage': self.voltage,
             'current': self.current,
             'power': self.power

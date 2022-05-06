@@ -1,6 +1,7 @@
 from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
+from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
@@ -32,33 +33,33 @@ class DevicesController(BaseController):
 
     @route(http_methods.POST, auth_required=True)
     def create(self) -> Response:
-        device = Device.from_dict(self.get_json_body(), set_id=False)
-        if not device.is_valid():
-            return Response.bad_request(validation_errors=device.validation_errors)
-        device_creator = DeviceCreator(self.device_repository)
         try:
+            device = Device.from_dict(self.get_json_body(), set_id=False)
+            device_creator = DeviceCreator(self.device_repository)
             device_id = device_creator.create_device(device, self.get_authenticated_user_id())
+            return Response.created_successfully(device_id)
+        except ModelValidationException as e:
+            return Response.bad_request(validation_errors=e.validation_errors)
         except DeviceAlreadyExistentException:
             return Response.conflict('There is another device with the same device_id for logged user')
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the device')
-        return Response.created_successfully(device_id)
 
     @route(http_methods.POST, auth_required=True)
     def add_measure(self, device_id: str) -> Response:
-        measure = Measure.from_dict(self.get_json_body())
-        if not measure.is_valid():
-            return Response.bad_request(validation_errors=measure.validation_errors)
-        device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
         try:
+            measure = Measure.from_dict(self.get_json_body())
+            device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
             device_measure_aggregator.add_measure_to_device(device_id, self.get_authenticated_user_id(), measure)
+            return Response.created_successfully()
+        except ModelValidationException as e:
+            return Response.bad_request(validation_errors=e.validation_errors)
         except UnregisteredDeviceException:
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has ocurred while creating the measure')
-        return Response.created_successfully()
 
     @route(http_methods.GET, auth_required=True)
     def get_measures(self, device_id: str, time_interval: int) -> Response:

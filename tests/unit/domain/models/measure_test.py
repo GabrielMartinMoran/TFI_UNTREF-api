@@ -1,6 +1,8 @@
 import pytest
 
 from datetime import datetime
+
+from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.models.measure import Measure
 from tests.model_stubs.measure_stub import MeasureStub
 
@@ -19,34 +21,39 @@ def measure_json():
     }
 
 
-def test_is_valid_returns_false_when_timestamp_is_none():
-    measure = MeasureStub(timestamp=None)
-    assert not measure.is_valid()
+def test_is_valid_raises_validation_exception_when_timestamp_is_none():
+    expected = ['timestamp is not valid']
+    with pytest.raises(ModelValidationException) as excinfo:
+        MeasureStub(timestamp=None)
+    assert excinfo.value.validation_errors == expected
 
 
-def test_is_valid_returns_false_when_voltage_is_none():
-    measure = MeasureStub(voltage=None)
-    assert not measure.is_valid()
+def test_is_valid_raises_validation_exception_when_voltage_is_none():
+    expected = ['voltage must be a valid float or int']
+    with pytest.raises(ModelValidationException) as excinfo:
+        MeasureStub(voltage=None)
+    assert excinfo.value.validation_errors == expected
 
 
-def test_is_valid_returns_false_when_voltage_is_lower_than_0():
-    measure = MeasureStub(voltage=-1.0)
-    assert not measure.is_valid()
+def test_is_valid_raises_validation_exception_when_voltage_is_lower_than_0():
+    expected = ['voltage is not valid']
+    with pytest.raises(ModelValidationException) as excinfo:
+        MeasureStub(voltage=-1.0)
+    assert excinfo.value.validation_errors == expected
 
 
-def test_is_valid_returns_false_when_current_is_none():
-    measure = MeasureStub(current=None)
-    assert not measure.is_valid()
+def test_is_valid_raises_validation_exception_when_current_is_none():
+    expected = ['current must be a valid float or int']
+    with pytest.raises(ModelValidationException) as excinfo:
+        MeasureStub(current=None)
+    assert excinfo.value.validation_errors == expected
 
 
-def test_is_valid_returns_false_when_current_is_lower_than_0():
-    measure = MeasureStub(current=-1.0)
-    assert not measure.is_valid()
-
-
-def test_is_valid_returns_true_when_all_properties_are_valid():
-    measure = MeasureStub()
-    assert measure.is_valid()
+def test_is_valid_raises_validation_exception_when_current_is_lower_than_0():
+    expected = ['current is not valid']
+    with pytest.raises(ModelValidationException) as excinfo:
+        MeasureStub(current=-1.0)
+    assert excinfo.value.validation_errors == expected
 
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):
@@ -57,13 +64,14 @@ def test_from_dict_instantiates_measure_with_provided_dict(measure_json):
 
 
 def test_to_dict_returns_measure_as_dict_when_called(measure):
-    actual = measure.to_dict()
-    assert actual == {
-        'timestamp': measure.timestamp.isoformat(),
-        'voltage': measure.voltage,
-        'current': measure.current,
-        'power': measure.voltage * measure.current
+    expected = {
+        'current': 1.0,
+        'power': 220.0,
+        'timestamp': '1970-01-12T13:46:40+00:00',
+        'voltage': 220.0
     }
+    actual = measure.to_dict()
+    assert actual == expected
 
 
 def test_power_returns_measure_power_when_called():

@@ -33,42 +33,42 @@ def test_is_valid_returns_false_when_property_value_is_not_provided_type(model):
 
 def test_is_valid_returns_false_when_property_value_is_lower_than_min(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, min=11)
+    validator = NumericValidator('prop_to_validate', int, min_value=11)
     actual = validator.is_valid(model)
     assert not actual
 
 
 def test_is_valid_returns_true_when_property_value_is_valid_and_value_is_greater_than_min(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, min=9)
+    validator = NumericValidator('prop_to_validate', int, min_value=9)
     actual = validator.is_valid(model)
     assert actual
 
 
 def test_is_valid_returns_true_when_property_value_is_valid_and_value_is_equal_to_min(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, min=10)
+    validator = NumericValidator('prop_to_validate', int, min_value=10)
     actual = validator.is_valid(model)
     assert actual
 
 
 def test_is_valid_returns_false_when_property_value_is_greater_than_max(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, max=9)
+    validator = NumericValidator('prop_to_validate', int, max_value=9)
     actual = validator.is_valid(model)
     assert not actual
 
 
 def test_is_valid_returns_true_when_property_value_is_valid_and_value_is_lower_than_max(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, max=11)
+    validator = NumericValidator('prop_to_validate', int, max_value=11)
     actual = validator.is_valid(model)
     assert actual
 
 
 def test_is_valid_returns_true_when_property_value_is_valid_and_value_is_equal_to_max(model):
     model.prop_to_validate = 10
-    validator = NumericValidator('prop_to_validate', int, max=10)
+    validator = NumericValidator('prop_to_validate', int, max_value=10)
     actual = validator.is_valid(model)
     assert actual
 

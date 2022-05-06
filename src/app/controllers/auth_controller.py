@@ -5,6 +5,7 @@ from src.app.utils.logging.logger import Logger
 from src.domain.exceptions.email_already_registered_exception import EmailAlreadyRegisteredException
 from src.domain.exceptions.invalid_login_exception import InvalidLoginException
 from src.domain.exceptions.invalid_user_exception import InvalidUserException
+from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.services.auth.user_logger import UserLogger
 from src.domain.services.auth.user_obtainer import UserObtainer
 from src.domain.services.auth.user_registerer import UserRegisterer
@@ -23,18 +24,18 @@ class AuthController(BaseController):
 
     @route(http_methods.POST)
     def register(self) -> Response:
-        user = User.from_dict(self.get_json_body())
-        if not user.is_valid():
-            return Response.bad_request(validation_errors=user.validation_errors)
-        user_registerer = UserRegisterer(self.user_repository)
         try:
+            user = User.from_dict(self.get_json_body())
+            user_registerer = UserRegisterer(self.user_repository)
             user_registerer.register_user(user)
+            return Response.created_successfully()
+        except ModelValidationException as e:
+            return Response.bad_request(validation_errors=e.validation_errors)
         except EmailAlreadyRegisteredException:
             return Response.conflict('User with same email already exists')
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while creating user')
-        return Response.created_successfully()
 
     @route(http_methods.POST)
     def login(self) -> Response:
@@ -48,7 +49,9 @@ class AuthController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while logging in user')
-        return Response.success({'auth_info': auth_info.to_token()})
+        return Response.success({
+            'token': auth_info.to_token()
+        })
 
     @route(http_methods.GET, alias='get_data', auth_required=True)
     def get_logged_user_data(self) -> Response:

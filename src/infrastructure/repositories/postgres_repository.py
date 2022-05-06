@@ -12,7 +12,7 @@ class PostgresRepository:
         cursor = conn.cursor()
         result = QueryResult()
         try:
-            cursor.execute(query)
+            cursor.execute(f"SET TIMEZONE = 'utc'; {query}")
             result.from_cursor(cursor)
             cursor.close()
             if not transaction:
