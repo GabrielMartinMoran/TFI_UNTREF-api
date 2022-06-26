@@ -1,8 +1,9 @@
 from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
-from src.domain.mappers.task_mapper import TaskMapper
+from src.domain.mappers.scheduling.tasks.task_mapper import TaskMapper
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
+from src.domain.serializers.measure_serializer import MeasureSerializer
 from tests.model_stubs.measure_stub import MeasureStub
 
 
@@ -70,7 +71,7 @@ def test_add_measure_returns_error_response_when_measure_is_not_valid():
 
 
 def test_add_measure_returns_error_response_when_device_is_not_valid_for_user():
-    controller = DevicesController(Request.from_body(MeasureStub().to_dict()))
+    controller = DevicesController(Request.from_body(MeasureSerializer.serialize(MeasureStub())))
     controller.device_repository.exists_for_user = lambda ble_id, user_id: False
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
@@ -78,7 +79,7 @@ def test_add_measure_returns_error_response_when_device_is_not_valid_for_user():
 
 
 def test_add_measure_returns_ok_response_when_measure_was_registered():
-    controller = DevicesController(Request.from_body(MeasureStub().to_dict()))
+    controller = DevicesController(Request.from_body(MeasureSerializer.serialize(MeasureStub())))
     controller.device_repository.exists_for_user = lambda device_id, user_id: True
     controller.measure_repository.create = lambda measure, device_id: None
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
@@ -273,7 +274,7 @@ def test_get_scheduling_tasks_returns_a_list_of_scheduled_tasks():
         }
     ]
     controller.device_repository.exists_for_user = lambda ble_id, user_id: True
-    controller.device_repository.get_scheduling_tasks = lambda device_id: TaskMapper.map_tasks(device_tasks)
+    controller.device_repository.get_scheduling_tasks = lambda device_id: TaskMapper.map_all(device_tasks)
     actual = controller.get_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 200
     assert actual.body == device_tasks

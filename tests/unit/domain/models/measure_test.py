@@ -3,7 +3,9 @@ import pytest
 from datetime import datetime
 
 from src.domain.exceptions.model_validation_exception import ModelValidationException
+from src.domain.mappers.measure_mapper import MeasureMapper
 from src.domain.models.measure import Measure
+from src.domain.serializers.measure_serializer import MeasureSerializer
 from tests.model_stubs.measure_stub import MeasureStub
 
 
@@ -57,7 +59,7 @@ def test_is_valid_raises_validation_exception_when_current_is_lower_than_0():
 
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):
-    actual = Measure.from_dict(measure_json)
+    actual = MeasureMapper.map(measure_json)
     assert actual.timestamp == datetime.utcfromtimestamp(measure_json['timestamp'])
     assert actual.voltage == measure_json['voltage']
     assert actual.current == measure_json['current']
@@ -70,7 +72,7 @@ def test_to_dict_returns_measure_as_dict_when_called(measure):
         'timestamp': '1970-01-12T13:46:40+00:00',
         'voltage': 220.0
     }
-    actual = measure.to_dict()
+    actual = MeasureSerializer.serialize(measure)
     assert actual == expected
 
 

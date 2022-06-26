@@ -4,7 +4,6 @@ from typing import Union
 from dateutil import parser
 from datetime import datetime
 
-from src.common import dates
 from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.validators.datetime_validator import DatetimeValidator
 from src.validators.float_validator import FloatValidator
@@ -56,19 +55,3 @@ class Measure(BaseModel):
     @property
     def power(self) -> float:
         return round(self.voltage * self.current, self._ROUND_DECIMALS)
-
-    def to_dict(self) -> dict:
-        return {
-            'timestamp': dates.to_utc_isostring(self.timestamp),
-            'voltage': self.voltage,
-            'current': self.current,
-            'power': self.power
-        }
-
-    @staticmethod
-    def from_dict(data: dict) -> 'Measure':
-        return Measure(
-            timestamp=data.get('timestamp'),
-            voltage=data.get('voltage'),
-            current=data.get('current'),
-        )

@@ -44,24 +44,3 @@ class Device(BaseModel):
     @property
     def measures(self) -> List[Measure]:
         return self._measures
-
-    def to_dict(self) -> dict:
-        return {
-            'id': self.id,
-            'name': self.name,
-            'measures': [measure.to_dict() for measure in self.measures],
-            'active': self.active,
-            'turned_on': self.turned_on
-        }
-
-    @staticmethod
-    def from_dict(data: dict, set_id=True) -> 'Device':
-        return Device(
-            name=data.get('name'),
-            device_id=data.get('device_id', data.get('id')) if data.get('device_id',
-                                                                        data.get('id')) and set_id else None,
-            active=data.get('active', False),
-            turned_on=data.get('turned_on', False),
-            measures=[Measure.from_dict(x) for x in data.get('measures', [])],
-            created_date=data.get('created_date')
-        )

@@ -41,15 +41,6 @@ class User(BaseModel):
     def hashed_password(self) -> str:
         return self._hashed_password
 
-    def to_dict(self, include_hashed_password=False, creating_user: bool = False) -> dict:
-        result = {
-            'username': self.username,
-            'email': self.email
-        }
-        if include_hashed_password:
-            result['hashed_password'] = self.hashed_password
-        return result
-
     @staticmethod
     def from_dict(data: dict) -> 'User':
         model = User(

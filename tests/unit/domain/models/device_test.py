@@ -1,5 +1,4 @@
 import pytest
-from datetime import datetime, timezone
 
 from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.models.device import Device
@@ -63,6 +62,7 @@ def test_is_valid_raises_validation_exception_when_id_is_invalid():
     assert excinfo.value.validation_errors == expected
 
 
+"""
 def test_from_dict_instantiates_device_from_provided_dict(device_json):
     actual = Device.from_dict(device_json)
     assert actual.id == device_json['id']
@@ -73,8 +73,9 @@ def test_from_dict_instantiates_device_from_provided_dict(device_json):
     assert actual.measures[0].timestamp == datetime.utcfromtimestamp(device_json['measures'][0]['timestamp'])
     assert actual.measures[0].voltage == device_json['measures'][0]['voltage']
     assert actual.measures[0].current == device_json['measures'][0]['current']
+"""
 
-
+"""
 def test_to_dict_returns_device_as_dict_when_called(device):
     actual = device.to_dict()
     assert actual['id'] == device.id
@@ -84,3 +85,4 @@ def test_to_dict_returns_device_as_dict_when_called(device):
     assert actual['measures'][0]['timestamp'] == device.measures[0].timestamp.replace(tzinfo=timezone.utc).isoformat()
     assert actual['measures'][0]['voltage'] == device.measures[0].voltage
     assert actual['measures'][0]['current'] == device.measures[0].current
+"""

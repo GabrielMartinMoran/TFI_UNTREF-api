@@ -10,7 +10,8 @@ from src.common import dates
 from src.domain.models.device import Device
 from src.domain.models.scheduling.tasks.task import Task
 from src.domain.models.user import User
-from src.domain.serializers.task_serializer import TaskSerializer
+from src.domain.serializers.measure_serializer import MeasureSerializer
+from src.domain.serializers.scheduling.tasks.task_serializer import TaskSerializer
 from src.infrastructure.repositories.device_pg_repository import DevicePGRepository
 from src.infrastructure.repositories.measure_pg_repository import MeasurePGRepository
 from tests.integration.utils import shared_variables
@@ -62,7 +63,7 @@ def try_user_login(device_name: str):
 
 @when(parsers.cfparse('user tries to add a measure for device with id \'{device_id}\''))
 def try_add_valid_measure(device_id: str):
-    controller = DevicesController(request=Request.from_body(MeasureStub().to_dict()),
+    controller = DevicesController(request=Request.from_body(MeasureSerializer.serialize(MeasureStub())),
                                    auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.add_measure(device_id)
 
@@ -70,7 +71,7 @@ def try_add_valid_measure(device_id: str):
 @when(parsers.cfparse('user tries to add an invalid measure for device with id \'{device_id}\''))
 def try_add_invalid_measure(device_id: str):
     measure_dict = {
-        **MeasureStub().to_dict(), **{
+        **MeasureSerializer.serialize(MeasureStub()), **{
             'voltage': -200.0,
             'current': -5.0
         }
@@ -93,7 +94,7 @@ def try_set_valid_scheduling_tasks(device_id: str):
     for x in range(random.randint(2, 5)):
         tasks.append(TaskStub())
         tasks.append(DailyTaskStub())
-    controller = DevicesController(request=Request.from_body(TaskSerializer.serialize_tasks(tasks)),
+    controller = DevicesController(request=Request.from_body(TaskSerializer.serialize_all(tasks)),
                                    auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.set_scheduling_tasks(device_id)
 
@@ -138,4 +139,4 @@ def scheduling_tasks_set_successfully():
 @then('scheduling tasks are returned successfully')
 def scheduling_tasks_get_successfully():
     assert shared_variables.last_response.status_code == 200
-    assert shared_variables.last_response.body == TaskSerializer.serialize_tasks(last_device_scheduling_tasks)
+    assert shared_variables.last_response.body == TaskSerializer.serialize_all(last_device_scheduling_tasks)
