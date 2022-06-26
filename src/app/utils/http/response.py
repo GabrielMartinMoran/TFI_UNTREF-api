@@ -1,5 +1,5 @@
 from http.client import HTTPResponse
-from typing import Union, List
+from typing import Union, List, Optional
 from flask import jsonify
 
 
@@ -18,17 +18,17 @@ class Response:
         return self._body
 
     @staticmethod
-    def success(body: Union[dict, list] = None) -> 'Response':
+    def success(body: Optional[Union[dict, list]] = None) -> 'Response':
         return Response(status_code=200, body=body or {})
 
     @staticmethod
-    def created_successfully(created_id: str = None) -> 'Response':
+    def created_successfully(created_id: Optional[str] = None) -> 'Response':
         return Response(status_code=201, body={
             'id': created_id
         } if created_id else {})
 
     @staticmethod
-    def bad_request(message: str = None, validation_errors: List[str] = None) -> 'Response':
+    def bad_request(message: Optional[str] = None, validation_errors: Optional[List[str]] = None) -> 'Response':
         messages = []
         if message:
             messages.append(message)
@@ -39,13 +39,13 @@ class Response:
         } if messages else {})
 
     @staticmethod
-    def conflict(message: str = None) -> 'Response':
+    def conflict(message: Optional[str] = None) -> 'Response':
         return Response(status_code=409, body={
             'message': message
         } if message else {})
 
     @staticmethod
-    def server_error(message: str = None) -> 'Response':
+    def server_error(message: Optional[str] = None) -> 'Response':
         return Response(status_code=500, body={
             'message': message
         } if message else {})

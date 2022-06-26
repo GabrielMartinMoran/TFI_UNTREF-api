@@ -18,6 +18,10 @@ class Migration001(BaseMigration):
             "CREATE TABLE Measures (measure_id serial NOT NULL PRIMARY KEY, device_id VARCHAR NOT NULL, "
             "voltage numeric NOT NULL, current numeric NOT NULL, \"timestamp\" TIMESTAMP NOT NULL, "
             "CONSTRAINT measures_devices_fk FOREIGN KEY (device_id) REFERENCES devices (device_id) MATCH SIMPLE ON "
-            "UPDATE NO ACTION ON DELETE CASCADE NOT VALID)"
+            "UPDATE NO ACTION ON DELETE CASCADE NOT VALID)",
+
+            "CREATE TABLE DeviceTasks (device_id VARCHAR NOT NULL, tasks JSONB NOT NULL, "
+            "CONSTRAINT devicetasks_devices_fk FOREIGN KEY (device_id) REFERENCES devices (device_id) MATCH SIMPLE ON "
+            "UPDATE NO ACTION ON DELETE CASCADE NOT VALID)",
         ]
         self._execute_sql(queries, cursor)

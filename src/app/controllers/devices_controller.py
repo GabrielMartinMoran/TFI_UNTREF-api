@@ -1,13 +1,18 @@
 from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
+from src.domain.exceptions.device_not_found_exception import DeviceNotFoundException
 from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
+from src.domain.mappers.task_mapper import TaskMapper
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
+from src.domain.serializers.task_serializer import TaskSerializer
 from src.domain.services.devices.device_creator import DeviceCreator
 from src.domain.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.domain.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
+from src.domain.services.devices.device_scheduler_retriever import DeviceSchedulerRetriever
+from src.domain.services.devices.device_scheduler_updater import DeviceSchedulerUpdater
 from src.domain.services.devices.devices_obtainer import DevicesRetriever
 from src.app.utils.http.response import Response
 from src.app.utils.http.route import route
@@ -25,13 +30,7 @@ class DevicesController(BaseController):
         self.device_repository = DevicePGRepository()
         self.measure_repository = MeasurePGRepository()
 
-    """
-    @route(http_methods.GET)
-    def generate_ble_id(self) -> Response:
-        return self.ok({'device_id': BleIdGenerator.generate_ble_id()})
-    """
-
-    @route(http_methods.POST, auth_required=True)
+    @route(http_methods.POST)
     def create(self) -> Response:
         try:
             device = Device.from_dict(self.get_json_body(), set_id=False)
@@ -46,7 +45,7 @@ class DevicesController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the device')
 
-    @route(http_methods.POST, auth_required=True)
+    @route(http_methods.POST)
     def add_measure(self, device_id: str) -> Response:
         try:
             measure = Measure.from_dict(self.get_json_body())
@@ -59,26 +58,59 @@ class DevicesController(BaseController):
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
             Logger.error(e)
-            return Response.server_error('An error has ocurred while creating the measure')
+            return Response.server_error('An error has occurred while creating the measure')
 
-    @route(http_methods.GET, auth_required=True)
+    @route(http_methods.GET)
     def get_measures(self, device_id: str, time_interval: int) -> Response:
-        summarizer = DeviceMeasureSummarizer(self.device_repository, self.measure_repository)
         try:
+            summarizer = DeviceMeasureSummarizer(self.device_repository, self.measure_repository)
             measures = summarizer.get_summarized_measures(device_id, self.get_authenticated_user_id(), time_interval)
+            return Response.success([x.to_dict() for x in measures])
         except UnregisteredDeviceException:
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain device measures')
-        return Response.success([x.to_dict() for x in measures])
 
-    @route(http_methods.GET, alias='get_all', auth_required=True)
+    @route(http_methods.GET, alias='get_all')
     def get_all_for_user(self) -> Response:
-        devices_retriever = DevicesRetriever(self.device_repository)
         try:
+            devices_retriever = DevicesRetriever(self.device_repository)
             devices = devices_retriever.get_user_devices(self.get_authenticated_user_id())
+            return Response.success([device.to_dict() for device in devices])
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain logged user devices')
-        return Response.success([device.to_dict() for device in devices])
+
+    @route(http_methods.POST)
+    def set_scheduling_tasks(self, device_id: str) -> Response:
+        try:
+            tasks = TaskMapper.map_tasks(self.get_json_body())
+            updater = DeviceSchedulerUpdater(self.device_repository)
+            updater.set_scheduling_tasks(device_id, self.get_authenticated_user_id(), tasks)
+            return Response.success()
+        except ModelValidationException as e:
+            Logger.error(e)
+            return Response.bad_request(validation_errors=e.validation_errors)
+        except DeviceNotFoundException as e:
+            Logger.error(e)
+            return Response.bad_request('Provided device_id does not match any of the user devices')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while updating device scheduling')
+
+    @route(http_methods.GET)
+    def get_scheduling_tasks(self, device_id: str) -> Response:
+        try:
+            retriever = DeviceSchedulerRetriever(self.device_repository)
+            tasks = retriever.get_scheduling_tasks(device_id, self.get_authenticated_user_id())
+            return Response.success(TaskSerializer.serialize_tasks(tasks))
+        except ModelValidationException as e:
+            Logger.error(e)
+            return Response.bad_request(validation_errors=e.validation_errors)
+        except DeviceNotFoundException as e:
+            Logger.error(e)
+            return Response.bad_request('Provided device_id does not match any of the user devices')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while getting device scheduling')

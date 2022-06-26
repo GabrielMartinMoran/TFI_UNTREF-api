@@ -1,5 +1,6 @@
 from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
+from src.domain.mappers.task_mapper import TaskMapper
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
 from tests.model_stubs.measure_stub import MeasureStub
@@ -210,3 +211,69 @@ def test_get_all_for_user_returns_ok_response_with_user_devices():
             'turned_on': False
         }
     ]
+
+
+def test_set_scheduling_tasks_returns_ok_tasks_when_scheduling_tasks_are_updated_successfully():
+    controller = DevicesController(Request.from_body([
+        {
+            'action': 'TURN_DEVICE_ON',
+            'moment': '2022-06-22T23:32:19.145344+00:00',
+            'weekdays': [0, 2, 3]
+        },
+        {
+            'action': 'TURN_DEVICE_OFF',
+            'moment': '2022-06-30T14:25:19.145344+00:00'
+        }
+    ]))
+    controller.device_repository.exists_for_user = lambda ble_id, user_id: True
+    controller.device_repository._has_scheduling_tasks = lambda device_id: False
+    controller.device_repository._create_scheduling_tasks = lambda device, tasks: None
+    actual = controller.set_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 200
+
+
+def test_set_scheduling_tasks_returns_error_response_when_user_does_not_have_provided_device():
+    controller = DevicesController(Request.from_body([]))
+    controller.device_repository.exists_for_user = lambda ble_id, user_id: False
+    actual = controller.set_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 400
+    assert actual.body['message'] == 'Provided device_id does not match any of the user devices'
+
+
+def test_set_scheduling_tasks_returns_error_response_when_a_task_is_not_valid():
+    controller = DevicesController(Request.from_body([
+        {
+            'action': 'TURN_DEVICE_ON'
+        }
+    ]))
+    actual = controller.set_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 400
+    assert actual.body['message'] == 'Validation error: moment is not valid'
+
+
+def test_get_scheduling_tasks_returns_error_response_when_user_does_not_have_provided_device():
+    controller = DevicesController(None)
+    controller.device_repository.exists_for_user = lambda ble_id, user_id: False
+    actual = controller.get_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 400
+    assert actual.body['message'] == 'Provided device_id does not match any of the user devices'
+
+
+def test_get_scheduling_tasks_returns_a_list_of_scheduled_tasks():
+    controller = DevicesController(None)
+    device_tasks = [
+        {
+            'action': 'TURN_DEVICE_ON',
+            'moment': '2022-06-22T23:32:19.145344+00:00',
+            'weekdays': [0, 2, 3]
+        },
+        {
+            'action': 'TURN_DEVICE_OFF',
+            'moment': '2022-06-30T14:25:19.145344+00:00'
+        }
+    ]
+    controller.device_repository.exists_for_user = lambda ble_id, user_id: True
+    controller.device_repository.get_scheduling_tasks = lambda device_id: TaskMapper.map_tasks(device_tasks)
+    actual = controller.get_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 200
+    assert actual.body == device_tasks

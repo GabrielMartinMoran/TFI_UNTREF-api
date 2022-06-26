@@ -22,7 +22,7 @@ class AuthController(BaseController):
         super().__init__(request, auth_info)
         self.user_repository = UserPGRepository()
 
-    @route(http_methods.POST)
+    @route(http_methods.POST, auth_required=False)
     def register(self) -> Response:
         try:
             user = User.from_dict(self.get_json_body())
@@ -37,7 +37,7 @@ class AuthController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating user')
 
-    @route(http_methods.POST)
+    @route(http_methods.POST, auth_required=False)
     def login(self) -> Response:
         body = self.get_json_body()
         user_logger = UserLogger(self.user_repository)
@@ -53,7 +53,7 @@ class AuthController(BaseController):
             'token': auth_info.to_token()
         })
 
-    @route(http_methods.GET, alias='get_data', auth_required=True)
+    @route(http_methods.GET, alias='get_data')
     def get_logged_user_data(self) -> Response:
         user_obtainer = UserObtainer(self.user_repository)
         try:

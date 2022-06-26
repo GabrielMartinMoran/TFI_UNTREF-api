@@ -9,7 +9,7 @@ def _normalize_alias(alias: str) -> Optional[str]:
     return None
 
 
-def route(method_type: str, alias: str = None, auth_required: bool = False):
+def route(method_type: str, alias: str = None, auth_required: bool = True):
     def wrapper(func):
         Router.register_http_method({
             'type': method_type,
