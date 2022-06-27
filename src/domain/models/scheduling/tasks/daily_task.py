@@ -1,25 +1,27 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 
+from pymodelio import pymodelio_model, Attribute
+from pymodelio.exceptions import ModelValidationException
+from pymodelio.validators import ListValidator
+
 from src.common import dates
-from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.models.scheduling.scheduler_action import SchedulerAction
 from src.common.weekday import Weekday
 from src.domain.models.scheduling.tasks.task import Task
-from src.domain.models.scheduling.tasks.task_action import TaskAction
 
 
+@pymodelio_model
 class DailyTask(Task):
     """
     A task that is executed in specific days
     On daily tasks, moment is used as time, not datetime
     """
+    _weekdays: Attribute[List[Weekday]](validator=ListValidator(elements_type=Weekday))
 
-    def __init__(self, action: TaskAction, moment: datetime, weekdays: List[Weekday]) -> None:
-        if len(weekdays) == 0:
-            raise ModelValidationException('weekdays attribute can not be empty')
-        self._weekdays = weekdays
-        super().__init__(action, moment)
+    def __once_validated__(self) -> None:
+        if len(self.weekdays) == 0:
+            raise ModelValidationException('weekdays attribute must not be empty')
 
     @property
     def weekdays(self) -> List[Weekday]:

@@ -1,3 +1,5 @@
+from pymodelio.exceptions import ModelValidationException
+
 from src.app.controllers.base_controller import BaseController
 from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
@@ -5,7 +7,6 @@ from src.app.utils.logging.logger import Logger
 from src.domain.exceptions.email_already_registered_exception import EmailAlreadyRegisteredException
 from src.domain.exceptions.invalid_login_exception import InvalidLoginException
 from src.domain.exceptions.invalid_user_exception import InvalidUserException
-from src.domain.exceptions.model_validation_exception import ModelValidationException
 from src.domain.mappers.user_mapper import UserMapper
 from src.domain.serializers.user_serializer import UserSerializer
 from src.domain.services.auth.user_logger import UserLogger
@@ -31,7 +32,7 @@ class AuthController(BaseController):
             user_registerer.register_user(user)
             return Response.created_successfully()
         except ModelValidationException as e:
-            return Response.bad_request(validation_errors=e.validation_errors)
+            return Response.bad_request(message=str(e))
         except EmailAlreadyRegisteredException:
             return Response.conflict('User with same email already exists')
         except Exception as e:

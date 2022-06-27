@@ -1,34 +1,29 @@
-from decimal import Decimal
 from typing import Union
 
 from dateutil import parser
 from datetime import datetime
 
-from src.domain.exceptions.model_validation_exception import ModelValidationException
-from src.validators.datetime_validator import DatetimeValidator
-from src.validators.float_validator import FloatValidator
-from src.domain.models.base_model import BaseModel
+from pymodelio import Attribute, pymodelio_model
+from pymodelio.validators import DatetimeValidator, FloatValidator
 
 
-class Measure(BaseModel):
+@pymodelio_model
+class Measure:
     _ROUND_DECIMALS = 2
+    _timestamp: Attribute[datetime](validator=DatetimeValidator())
+    _voltage: Attribute[float](validator=FloatValidator(min_value=0))
+    _current: Attribute[float](validator=FloatValidator(min_value=0))
 
-    MODEL_VALIDATORS = [
-        DatetimeValidator('timestamp'),
-        FloatValidator('voltage', min_value=0),
-        FloatValidator('current', min_value=0),
-    ]
-
-    def __init__(self, timestamp: Union[datetime, int, str], voltage: Union[int, float],
-                 current: Union[int, float, Decimal], *args, **kwargs):
-        self._timestamp = self._format_timestamp(timestamp) if timestamp else None
-        if not isinstance(voltage, (float, int, Decimal)):
-            raise ModelValidationException('voltage must be a valid float or int')
-        self._voltage = float(voltage)
-        if not isinstance(current, (float, int, Decimal)):
-            raise ModelValidationException('current must be a valid float or int')
-        self._current = float(current)
-        super().__init__(*args, **kwargs)
+    def __before_validate__(self) -> None:
+        # Cast timestamp to datetime
+        if self._timestamp is not None:
+            self._timestamp = self._format_timestamp(self._timestamp)
+        # Cast voltage to float
+        if self._voltage is not None:
+            self._voltage = float(self._voltage)
+        # Cast current to float
+        if self._current is not None:
+            self._current = float(self._current)
 
     @classmethod
     def _format_timestamp(cls, timestamp: Union[datetime, int, str]) -> datetime:

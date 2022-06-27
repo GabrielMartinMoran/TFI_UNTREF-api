@@ -9,6 +9,6 @@ class UserRegisterer:
         self._user_repository = user_repository
 
     def register_user(self, user: User) -> None:
-        if self._user_repository.exists(user.id):
+        if self._user_repository.exists(user.user_id):
             raise EmailAlreadyRegisteredException()
         self._user_repository.create(user)

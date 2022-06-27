@@ -1,6 +1,6 @@
 import pytest
 
-from src.domain.exceptions.model_validation_exception import ModelValidationException
+from pymodelio.exceptions.model_validation_exception import ModelValidationException
 from src.domain.models.device import Device
 from src.domain.models.measure import Measure
 from tests.model_stubs.device_stub import DeviceStub
@@ -35,31 +35,27 @@ def device_json():
 
 
 def test_is_valid_raises_validation_exception_when_name_is_null():
-    expected = ['name is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Device.name must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_name_len_greater_than_32(device):
-    expected = ['name is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name='A' * 51)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Device.name is longer than 50'
 
 
 def test_is_valid_raises_validation_exception_when_name_len_zero(device):
-    expected = ['name is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name='')
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Device.name is shorter than 1'
 
 
 def test_is_valid_raises_validation_exception_when_id_is_invalid():
-    expected = ['device id is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(device_id='invalid_device_id')
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Device.device_id length is different than 36'
 
 
 """

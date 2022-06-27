@@ -1,9 +1,8 @@
-from typing import List, Type, Optional
+from typing import List, Type, Optional, Any
 
 from psycopg2 import extensions
 
 from src.domain.mappers.mapper import Mapper
-from src.domain.models import BaseModel
 
 
 class QueryResult:
@@ -33,10 +32,10 @@ class QueryResult:
             return {}
         return self.records[0]
 
-    def map_first(self, mapper: Type[Mapper]) -> Optional[BaseModel]:
+    def map_first(self, mapper: Type[Mapper]) -> Optional[Any]:
         if not self.records:
             return None
         return mapper.map(self.records[0])
 
-    def map_all(self, mapper: Type[Mapper]) -> List[BaseModel]:
+    def map_all(self, mapper: Type[Mapper]) -> List[Any]:
         return mapper.map_all(self.records)

@@ -14,7 +14,7 @@ def user_is_logged_in():
     user_password = 'Passw0rd'
     user_repository = UserPGRepository()
     user = User(username=user_email, email=user_email, password=user_password)
-    if not user_repository.exists(user.id):
+    if not user_repository.exists(user.user_id):
         user_repository.create(user)
 
     auth_controller = AuthController(Request.from_body({

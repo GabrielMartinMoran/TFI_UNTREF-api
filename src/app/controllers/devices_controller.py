@@ -2,7 +2,7 @@ from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
 from src.domain.exceptions.device_not_found_exception import DeviceNotFoundException
-from src.domain.exceptions.model_validation_exception import ModelValidationException
+from pymodelio.exceptions.model_validation_exception import ModelValidationException
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
 from src.domain.mappers.device_mapper import DeviceMapper
 from src.domain.mappers.measure_mapper import MeasureMapper
@@ -40,7 +40,7 @@ class DevicesController(BaseController):
             device_id = device_creator.create_device(device, self.get_authenticated_user_id())
             return Response.created_successfully(device_id)
         except ModelValidationException as e:
-            return Response.bad_request(validation_errors=e.validation_errors)
+            return Response.bad_request(message=str(e))
         except DeviceAlreadyExistentException:
             return Response.conflict('There is another device with the same device_id for logged user')
         except Exception as e:
@@ -55,7 +55,7 @@ class DevicesController(BaseController):
             device_measure_aggregator.add_measure_to_device(device_id, self.get_authenticated_user_id(), measure)
             return Response.created_successfully()
         except ModelValidationException as e:
-            return Response.bad_request(validation_errors=e.validation_errors)
+            return Response.bad_request(message=str(e))
         except UnregisteredDeviceException:
             return Response.bad_request(message='Device identifier is not valid for logged user')
         except Exception as e:
@@ -93,7 +93,7 @@ class DevicesController(BaseController):
             return Response.success()
         except ModelValidationException as e:
             Logger.error(e)
-            return Response.bad_request(validation_errors=e.validation_errors)
+            return Response.bad_request(message=str(e))
         except DeviceNotFoundException as e:
             Logger.error(e)
             return Response.bad_request('Provided device_id does not match any of the user devices')

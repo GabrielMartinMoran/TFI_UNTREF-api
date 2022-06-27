@@ -1,37 +1,35 @@
 from typing import List
 
+from pymodelio import Attribute, pymodelio_model
+from pymodelio.validators import Validator, ListValidator, StringValidator
+
 from src.common.id_generator import IdGenerator
 from src.domain.models.measure import Measure
-from src.validators.string_validator import StringValidator
-from src.domain.models.base_model import BaseModel
 
 
-class Device(BaseModel):
+@pymodelio_model
+class Device:
     MIN_NAME_LENGTH = 1
     MAX_NAME_LENGTH = 50
     BLE_ID_LENGTH = 36
+    _name: Attribute[str](validator=StringValidator(min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH))
+    _device_id: Attribute[str](validator=StringValidator(fixed_len=BLE_ID_LENGTH),
+                               default_factory=IdGenerator.generate_unique_id)
+    _active: Attribute[bool](validator=Validator(expected_type=bool), default_factory=lambda: False)
+    _turned_on: Attribute[bool](validator=Validator(expected_type=bool), default_factory=lambda: False)
+    _measures: Attribute[List[Measure]](validator=ListValidator(elements_type=Measure), default_factory=list)
 
-    MODEL_VALIDATORS = [
-        StringValidator('name', min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH),
-        StringValidator('_id', fixed_len=BLE_ID_LENGTH, message='device id is not valid')
-    ]
-
-    def __init__(self, name: str, device_id: str = None, active: bool = False, turned_on: bool = False,
-                 measures: List[Measure] = None, *args, **kwargs) -> None:
-        self._name = name
-        self._id = device_id.lower() if device_id else IdGenerator.generate_unique_id()
-        self._active = active
-        self._turned_on = turned_on
-        self._measures = measures or []
-        super().__init__(*args, **kwargs)
+    def __before_validate__(self) -> None:
+        # Force the device_id to be lowercase
+        self._device_id = self._device_id.lower()
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def id(self) -> str:
-        return self._id
+    def device_id(self) -> str:
+        return self._device_id
 
     @property
     def active(self) -> bool:

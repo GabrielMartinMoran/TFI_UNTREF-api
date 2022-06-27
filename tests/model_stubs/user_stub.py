@@ -16,12 +16,15 @@ def _generate_random_email() -> str:
     email_head = ''
     for x in range(random.randint(1, _MAX_EMAIL_HEAD_SIZE)):
         email_head += random.choice(_EMAIL_CHARACTERS)
+    # Email can not start with '.'
+    while email_head.startswith('.'):
+        email_head = random.choice(_EMAIL_CHARACTERS) + email_head[1:]
     return f'{email_head}@{random.choice(_EMAIL_DOMAINS)}'
 
 
 def _generate_random_username() -> str:
     username = ''
-    for x in range(random.randint(User.MIN_USER_LENGTH, User.MAX_USER_LENGTH)):
+    for x in range(random.randint(User.MIN_USERNAME_LENGTH, User.MAX_USERNAME_LENGTH)):
         username += random.choice(_VALID_USERNAME_CHARACTERS)
     return username
 
@@ -46,8 +49,8 @@ class UserStub:
     def __new__(cls, username: str = _DEFAULT, email: str = _DEFAULT, password: str = _DEFAULT,
                 hashed_password: str = _DEFAULT) -> User:
         return User(
-            username if username != _DEFAULT else _generate_random_username(),
-            email if email != _DEFAULT else _generate_random_email(),
-            password if password != _DEFAULT else _generate_random_password(),
-            hashed_password if hashed_password != _DEFAULT else None
+            username=username if username != _DEFAULT else _generate_random_username(),
+            email=email if email != _DEFAULT else _generate_random_email(),
+            password=password if password != _DEFAULT else _generate_random_password(),
+            hashed_password=hashed_password if hashed_password != _DEFAULT else None
         )

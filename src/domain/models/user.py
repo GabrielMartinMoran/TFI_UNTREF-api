@@ -1,29 +1,28 @@
+from pymodelio import pymodelio_model, Attribute
+from pymodelio.validators import StringValidator, EmailValidator
+
 from src.common.id_generator import IdGenerator
-from src.validators import validation_patterns
-from src.domain.models.base_model import BaseModel
 from src.common.hashing import hash_password
-from src.validators.string_validator import StringValidator
 
 
-class User(BaseModel):
-    MIN_USER_LENGTH = 3
-    MAX_USER_LENGTH = 32
+@pymodelio_model
+class User:
+    MIN_USERNAME_LENGTH = 3
+    MAX_USERNAME_LENGTH = 32
+    PASSWORD_VALIDATION_PATTERN = '^(?=.*[0-9]+.*)(?=.*[a-z]+.*)(?=.*[A-Z]+.*)[\\S]{8,32}$'
+    _username: Attribute[str](validator=StringValidator(min_len=MIN_USERNAME_LENGTH, max_len=MAX_USERNAME_LENGTH))
+    _email: Attribute[str](validator=EmailValidator())
+    _password: Attribute[str](
+        validator=StringValidator(nullable=True, regex=PASSWORD_VALIDATION_PATTERN, message='is not valid')
+    )
+    _hashed_password: Attribute[str](validator=StringValidator(message='is not valid'))
 
-    MODEL_VALIDATORS = [
-        StringValidator('username', min_len=MIN_USER_LENGTH, max_len=MAX_USER_LENGTH),
-        StringValidator('email', regex=validation_patterns.EMAIL_VALIDATION_PATTERN),
-        StringValidator('_password', nullable=True, regex=validation_patterns.PASSWORD_VALIDATION_PATTERN,
-                        message='password is not valid'),
-        StringValidator('hashed_password', message='password is not valid'),
-    ]
-
-    def __init__(self, username: str, email: str, password: str = None, hashed_password: str = None, *args,
-                 **kwargs) -> None:
-        self._username = username
-        self._email = email.lower() if email else None
-        self._password = password
-        self._hashed_password = hash_password(password) if password else hashed_password
-        super().__init__(*args, **kwargs)
+    def __before_validate__(self) -> None:
+        # Force the email to be lowercase
+        if self._email:
+            self._email = self._email.lower()
+        if self._password is not None:
+            self._hashed_password = hash_password(self._password)
 
     @property
     def username(self) -> str:
@@ -34,24 +33,12 @@ class User(BaseModel):
         return self._email
 
     @property
-    def id(self) -> str:
+    def user_id(self) -> str:
         return User.email_to_id(self.email)
 
     @property
     def hashed_password(self) -> str:
         return self._hashed_password
-
-    @staticmethod
-    def from_dict(data: dict) -> 'User':
-        model = User(
-            username=data.get('username'),
-            email=data.get('email'),
-            password=data.get('password'),
-            hashed_password=data.get('hashed_password'),
-            created_date=data.get('created_date')
-        )
-        model.avatar = data.get('avatar')
-        return model
 
     @staticmethod
     def email_to_id(email: str) -> str:

@@ -10,8 +10,7 @@ class UserMapper(Mapper):
             username=data.get('username'),
             email=data.get('email'),
             password=data.get('password'),
-            hashed_password=data.get('hashed_password'),
-            created_date=data.get('created_date')
+            hashed_password=data.get('hashed_password')
         )
         model.avatar = data.get('avatar')
         return model

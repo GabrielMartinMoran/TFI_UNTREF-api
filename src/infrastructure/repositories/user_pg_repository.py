@@ -16,7 +16,7 @@ class UserPGRepository(PostgresRepository, UserRepository):
 
     def create(self, user: User) -> None:
         self._execute_query(f"INSERT INTO Users (user_id, username, email, hashed_password) VALUES "
-                            f"('{user.id}', '{user.username}', '{user.email}', '{user.hashed_password}')")
+                            f"('{user.user_id}', '{user.username}', '{user.email}', '{user.hashed_password}')")
 
     """
     def email_exists(self, email: str) -> bool:

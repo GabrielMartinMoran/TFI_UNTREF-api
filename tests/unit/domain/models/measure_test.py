@@ -2,7 +2,7 @@ import pytest
 
 from datetime import datetime
 
-from src.domain.exceptions.model_validation_exception import ModelValidationException
+from pymodelio.exceptions.model_validation_exception import ModelValidationException
 from src.domain.mappers.measure_mapper import MeasureMapper
 from src.domain.models.measure import Measure
 from src.domain.serializers.measure_serializer import MeasureSerializer
@@ -11,7 +11,7 @@ from tests.model_stubs.measure_stub import MeasureStub
 
 @pytest.fixture
 def measure():
-    return Measure(1000000, 220.0, 1.0)
+    return Measure(timestamp=1000000, voltage=220.0, current=1.0)
 
 
 @pytest.fixture
@@ -24,38 +24,33 @@ def measure_json():
 
 
 def test_is_valid_raises_validation_exception_when_timestamp_is_none():
-    expected = ['timestamp is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(timestamp=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Measure.timestamp must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_voltage_is_none():
-    expected = ['voltage must be a valid float or int']
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(voltage=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Measure.voltage must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_voltage_is_lower_than_0():
-    expected = ['voltage is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(voltage=-1.0)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Measure.voltage is lower than 0'
 
 
 def test_is_valid_raises_validation_exception_when_current_is_none():
-    expected = ['current must be a valid float or int']
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(current=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Measure.current must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_current_is_lower_than_0():
-    expected = ['current is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(current=-1.0)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'Measure.current is lower than 0'
 
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):

@@ -1,6 +1,6 @@
 import pytest
 from src.common.hashing import hash_password
-from src.domain.exceptions.model_validation_exception import ModelValidationException
+from pymodelio.exceptions import ModelValidationException
 from src.domain.mappers.user_mapper import UserMapper
 from tests.model_stubs.user_stub import UserStub
 
@@ -15,52 +15,45 @@ def user_json():
 
 
 def test_is_valid_raises_validation_exception_when_username_is_none():
-    expected = ['username is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.username must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_username_is_longer_than_32():
-    expected = ['username is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username='A' * 33)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.username is longer than 32'
 
 
 def test_is_valid_raises_validation_exception_when_username_len_is_lower_than_3():
-    expected = ['username is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username='AA')
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.username is shorter than 3'
 
 
 def test_is_valid_raises_validation_exception_when_email_is_null():
-    expected = ['email is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(email=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.email must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_email_is_invalid():
-    expected = ['email is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(email='invalidemail@invalid')
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.email is not a valid email address'
 
 
 def test_is_valid_raises_validation_exception_when_password_is_invalid():
-    expected = ['password is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(password='invalidpassword')
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.password is not valid'
 
 
 def test_is_valid_with_no_hashed_password_raises_validation_exception():
-    expected = ['password is not valid']
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(password=None, hashed_password=None)
-    assert excinfo.value.validation_errors == expected
+    assert excinfo.value.args[0] == 'User.hashed_password is not valid'
 
 
 def test_from_json_set_hashed_password_with_password_hashed_when_password_is_provided(user_json):

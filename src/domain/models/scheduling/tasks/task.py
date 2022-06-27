@@ -1,27 +1,20 @@
 from datetime import datetime
 
+from pymodelio import Attribute, pymodelio_model
+from pymodelio.validators import Validator, DatetimeValidator
+
 from src.common import dates
-from src.domain.models import BaseModel
 from src.domain.models.scheduling.scheduler_action import SchedulerAction
 from src.domain.models.scheduling.tasks.task_action import TaskAction
-from src.validators.datetime_validator import DatetimeValidator
-from src.validators.validator import Validator
 
 
-class Task(BaseModel):
+@pymodelio_model
+class Task:
     """
     A task that is executed just one time
     """
-
-    MODEL_VALIDATORS = [
-        Validator('action'),
-        DatetimeValidator('moment')
-    ]
-
-    def __init__(self, action: TaskAction, moment: datetime) -> None:
-        self._action = action
-        self._moment = moment
-        super().__init__()
+    _action: Attribute[TaskAction](validator=Validator(expected_type=TaskAction))
+    _moment: Attribute[datetime](validator=DatetimeValidator())
 
     @property
     def action(self) -> TaskAction:
@@ -43,6 +36,3 @@ class Task(BaseModel):
         Returns true if the task moment already passed
         """
         return dates.now() > self.moment
-
-    def to_dict(self) -> dict:
-        pass

@@ -9,7 +9,7 @@ class DeviceCreator:
         self._device_repository = device_repository
 
     def create_device(self, device: Device, user_id: str) -> str:
-        if self._device_repository.exists_for_user(device.id, user_id):
+        if self._device_repository.exists_for_user(device.device_id, user_id):
             raise DeviceAlreadyExistentException()
         self._device_repository.create(device, user_id)
-        return device.id
+        return device.device_id

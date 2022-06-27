@@ -17,7 +17,11 @@ def setup_database():
     global migrator
     print('Setting up testing database')
     config.DB_NAME = 'devices_management_test'
-    # DB_USERNAME and DB_PASSWORD must be set as env var
+    # DB_USERNAME and DB_PASSWORD must be set as env var if they differ
+    if config.DB_USERNAME is None:
+        config.DB_USERNAME = 'postgres'
+    if config.DB_PASSWORD is None:
+        config.DB_PASSWORD = 'postgres'
     migrator = DBMigrator()
     migrator.run_migrations()
 
