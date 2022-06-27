@@ -8,6 +8,7 @@ from tests.integration.steps.user_register_steps import *  # noqa: F401, F403
 from tests.integration.steps.user_login_steps import *  # noqa: F401, F403
 from tests.integration.steps.device_steps import *  # noqa: F401, F403
 from tests.integration.steps.user_data_steps import *  # noqa: F401, F403
+from tests.integration.steps.device_scheduler_steps import *  # noqa: F401, F403
 
 migrator = None
 DROP_DB = True

@@ -1,20 +1,15 @@
 from src.app.utils.auth_info import AuthInfo
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
-from src.domain.exceptions.device_not_found_exception import DeviceNotFoundException
 from pymodelio.exceptions.model_validation_exception import ModelValidationException
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
 from src.domain.mappers.device_mapper import DeviceMapper
 from src.domain.mappers.measure_mapper import MeasureMapper
-from src.domain.mappers.scheduling.tasks.task_mapper import TaskMapper
 from src.domain.serializers.device_serializer import DeviceSerializer
 from src.domain.serializers.measure_serializer import MeasureSerializer
-from src.domain.serializers.scheduling.tasks.task_serializer import TaskSerializer
 from src.domain.services.devices.device_creator import DeviceCreator
 from src.domain.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.domain.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
-from src.domain.services.devices.device_scheduler_retriever import DeviceSchedulerRetriever
-from src.domain.services.devices.device_scheduler_updater import DeviceSchedulerUpdater
 from src.domain.services.devices.devices_obtainer import DevicesRetriever
 from src.app.utils.http.response import Response
 from src.app.utils.http.route import route
@@ -83,36 +78,3 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain logged user devices')
-
-    @route(http_methods.POST)
-    def set_scheduling_tasks(self, device_id: str) -> Response:
-        try:
-            tasks = TaskMapper.map_all(self.get_json_body())
-            updater = DeviceSchedulerUpdater(self.device_repository)
-            updater.set_scheduling_tasks(device_id, self.get_authenticated_user_id(), tasks)
-            return Response.success()
-        except ModelValidationException as e:
-            Logger.error(e)
-            return Response.bad_request(message=str(e))
-        except DeviceNotFoundException as e:
-            Logger.error(e)
-            return Response.bad_request('Provided device_id does not match any of the user devices')
-        except Exception as e:
-            Logger.error(e)
-            return Response.server_error('An error has occurred while updating device scheduling')
-
-    @route(http_methods.GET)
-    def get_scheduling_tasks(self, device_id: str) -> Response:
-        try:
-            retriever = DeviceSchedulerRetriever(self.device_repository)
-            tasks = retriever.get_scheduling_tasks(device_id, self.get_authenticated_user_id())
-            return Response.success(TaskSerializer.serialize_all(tasks))
-        except ModelValidationException as e:
-            Logger.error(e)
-            return Response.bad_request(validation_errors=e.validation_errors)
-        except DeviceNotFoundException as e:
-            Logger.error(e)
-            return Response.bad_request('Provided device_id does not match any of the user devices')
-        except Exception as e:
-            Logger.error(e)
-            return Response.server_error('An error has occurred while getting device scheduling')
