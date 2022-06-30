@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import List
 
 from pymodelio import pymodelio_model, Attribute
-from pymodelio.exceptions import ModelValidationException
 from pymodelio.validators import ListValidator
 
 from src.common import dates
@@ -17,11 +16,7 @@ class DailyTask(Task):
     A task that is executed in specific days
     On daily tasks, moment is used as time, not datetime
     """
-    _weekdays: Attribute[List[Weekday]](validator=ListValidator(elements_type=Weekday))
-
-    def __once_validated__(self) -> None:
-        if len(self.weekdays) == 0:
-            raise ModelValidationException('weekdays attribute must not be empty')
+    _weekdays: Attribute[List[Weekday]](validator=ListValidator(elements_type=Weekday, allow_empty=False))
 
     @property
     def weekdays(self) -> List[Weekday]:

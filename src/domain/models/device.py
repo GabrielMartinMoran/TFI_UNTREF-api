@@ -1,7 +1,7 @@
 from typing import List
 
 from pymodelio import Attribute, pymodelio_model
-from pymodelio.validators import Validator, ListValidator, StringValidator
+from pymodelio.validators import ListValidator, StringValidator, BoolValidator
 
 from src.common.id_generator import IdGenerator
 from src.domain.models.measure import Measure
@@ -15,8 +15,8 @@ class Device:
     _name: Attribute[str](validator=StringValidator(min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH))
     _device_id: Attribute[str](validator=StringValidator(fixed_len=BLE_ID_LENGTH),
                                default_factory=IdGenerator.generate_unique_id)
-    _active: Attribute[bool](validator=Validator(expected_type=bool), default_factory=lambda: False)
-    _turned_on: Attribute[bool](validator=Validator(expected_type=bool), default_factory=lambda: False)
+    _active: Attribute[bool](validator=BoolValidator(), default_factory=lambda: False)
+    _turned_on: Attribute[bool](validator=BoolValidator(), default_factory=lambda: False)
     _measures: Attribute[List[Measure]](validator=ListValidator(elements_type=Measure), default_factory=list)
 
     def __before_validate__(self) -> None:
