@@ -24,7 +24,7 @@ class DevicePGRepository(PostgresRepository, DeviceRepository):
 
     def get_user_devices(self, user_id: str) -> List[Device]:
         res = self._execute_query(f"SELECT * FROM Devices WHERE user_id = '{user_id}'")
-        return res.map_all(DeviceMapper)
+        return DeviceMapper.map_all(res.records, set_id=True)
 
     def _has_scheduling_tasks(self, device_id: str) -> bool:
         res = self._execute_query(f"SELECT COUNT(device_id) FROM DeviceTasks WHERE device_id = '{device_id}'")

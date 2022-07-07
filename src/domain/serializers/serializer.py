@@ -6,8 +6,8 @@ class Serializer:
 
     @classmethod
     @abstractmethod
-    def serialize(cls, model: Any) -> dict: pass
+    def serialize(cls, model: Any, **kwargs) -> dict: pass
 
     @classmethod
-    def serialize_all(cls, models: List) -> List[dict]:
-        return [cls.serialize(model) for model in models]
+    def serialize_all(cls, models: List, **kwargs) -> List[dict]:
+        return [cls.serialize(model, **kwargs) for model in models]

@@ -14,6 +14,7 @@ APP_PORT = 5000
 APP_USE_RELOADER = False
 APP_RUN_DEBUG_MODE = True
 CLIENT_APP_FOLDER = './client'
+HOST = '0.0.0.0'  # For running it locally but exposed
 
 # --------------------- #
 # -     APP INFO      - #

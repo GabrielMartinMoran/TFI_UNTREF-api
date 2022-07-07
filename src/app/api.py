@@ -65,4 +65,5 @@ def run():
     on_starting()
     app.run(debug=config.APP_RUN_DEBUG_MODE,
             use_reloader=config.APP_USE_RELOADER,
-            port=config.APP_PORT)
+            port=config.APP_PORT,
+            host=config.HOST)

@@ -19,13 +19,13 @@ class Response:
 
     @staticmethod
     def success(body: Optional[Union[dict, list]] = None) -> 'Response':
-        return Response(status_code=200, body=body or {})
+        return Response(status_code=200, body=body if body is not None else {})
 
     @staticmethod
     def created_successfully(created_id: Optional[str] = None) -> 'Response':
         return Response(status_code=201, body={
             'id': created_id
-        } if created_id else {})
+        } if created_id is not None else {})
 
     @staticmethod
     def bad_request(message: Optional[str] = None, validation_errors: Optional[List[str]] = None) -> 'Response':

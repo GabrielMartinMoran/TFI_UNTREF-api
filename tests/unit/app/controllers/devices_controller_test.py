@@ -191,21 +191,21 @@ def test_get_all_for_user_returns_ok_response_with_user_devices():
     assert actual.body == [
         {
             'active': False,
-            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c905',
+            'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c905',
             'measures': [],
             'name': 'device_1',
             'turned_on': False
         },
         {
             'active': False,
-            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c906',
+            'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c906',
             'measures': [],
             'name': 'device_2',
             'turned_on': False
         },
         {
             'active': False,
-            'id': '5c7b5ffc-90e7-1b85-f041-0595c912c907',
+            'device_id': '5c7b5ffc-90e7-1b85-f041-0595c912c907',
             'measures': [],
             'name': 'device_3',
             'turned_on': False

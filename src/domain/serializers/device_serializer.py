@@ -8,7 +8,7 @@ class DeviceSerializer(Serializer):
     @classmethod
     def serialize(cls, model: Device) -> dict:
         return {
-            'id': model.device_id,
+            'device_id': model.device_id,
             'name': model.name,
             'measures': MeasureSerializer.serialize_all(model.measures),
             'active': model.active,
