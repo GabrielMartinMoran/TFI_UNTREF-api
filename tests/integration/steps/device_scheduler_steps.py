@@ -5,7 +5,9 @@ from pytest_bdd import given, then, when, parsers
 
 from src.app.controllers.scheduler_controller import SchedulerController
 from src.app.utils.http.request import Request
+from src.domain.models.scheduling.scheduling_stack import SchedulingStack
 from src.domain.models.scheduling.tasks.task import Task
+from src.domain.serializers.scheduling.scheduler_action_serializer import SchedulerActionSerializer
 from src.domain.serializers.scheduling.tasks.task_serializer import TaskSerializer
 from src.infrastructure.repositories.device_scheduler_pg_repository import DeviceSchedulerPGRepository
 from tests.integration.utils import shared_variables
@@ -45,6 +47,12 @@ def try_get_valid_tasks(device_id: str):
     shared_variables.last_response = controller.get_scheduling_tasks(device_id)
 
 
+@when(parsers.cfparse('user tries to get next scheduling tasks for device with id \'{device_id}\''))
+def try_get_nex_scheduling_tasks(device_id: str):
+    controller = SchedulerController(request=None, auth_info=shared_variables.logged_auth_info)
+    shared_variables.last_response = controller.get_next_scheduling_action(device_id)
+
+
 @then('device has those scheduling tasks configured successfully')
 def scheduling_tasks_set_successfully():
     assert shared_variables.last_response.status_code == 200
@@ -54,3 +62,10 @@ def scheduling_tasks_set_successfully():
 def scheduling_tasks_get_successfully():
     assert shared_variables.last_response.status_code == 200
     assert shared_variables.last_response.body == TaskSerializer.serialize_all(last_device_scheduling_tasks)
+
+
+@then('next device scheduling task is returned successfully')
+def next_scheduling_task_returned_successfully():
+    expected = SchedulerActionSerializer.serialize(SchedulingStack(last_device_scheduling_tasks).get_next_action())
+    assert shared_variables.last_response.status_code == 200
+    assert shared_variables.last_response.body == expected
