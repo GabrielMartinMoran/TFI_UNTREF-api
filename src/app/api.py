@@ -1,4 +1,3 @@
-import atexit
 from flask import Flask, request, send_from_directory
 from flask_restful import Api
 from flask_cors import CORS
@@ -45,13 +44,6 @@ def static_file(path):
 def not_found(path):
     Logger.info("Route not found: %s", path)
     return router.error_response('Not found!', 404)
-
-
-def on_app_stopped():
-    Logger.info("App stopped")
-
-
-atexit.register(on_app_stopped)
 
 
 def on_starting(server=None):
