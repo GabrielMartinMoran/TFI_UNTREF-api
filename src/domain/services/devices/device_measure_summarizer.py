@@ -20,7 +20,12 @@ class DeviceMeasureSummarizer:
         measures = self._measure_repository.get_from_last_minutes(device_id, time_interval)
         return self._summarize_measures(measures, time_interval)
 
-    def _summarize_measures(self, measures: List[Measure], time_interval: int):
+    def get_all_devices_summarized_measures(self, user_id: str, time_interval: int) -> List[Measure]:
+        measures = self._measure_repository.get_all_for_user_from_last_minutes(user_id, time_interval)
+        return self._summarize_measures(measures, time_interval)
+
+    @classmethod
+    def _summarize_measures(cls, measures: List[Measure], time_interval: int) -> List[Measure]:
         if not measures:
             return []
         summarization_minutes_interval = float(time_interval) / float(config.MAX_SUMMARIZED_MEASURES_TO_SHOW)

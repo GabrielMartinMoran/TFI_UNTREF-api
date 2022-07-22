@@ -78,3 +78,13 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain logged user devices')
+
+    @route(http_methods.GET)
+    def get_measures_for_all_devices(self, time_interval: int) -> Response:
+        try:
+            summarizer = DeviceMeasureSummarizer(self.device_repository, self.measure_repository)
+            measures = summarizer.get_all_devices_summarized_measures(self.get_authenticated_user_id(), time_interval)
+            return Response.success(MeasureSerializer.serialize_all(measures))
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while trying to obtain measures')

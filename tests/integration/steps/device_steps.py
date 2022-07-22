@@ -67,6 +67,13 @@ def try_get_measures_for_device(device_id: str):
     shared_variables.last_response = controller.get_measures(device_id, minutes_interval)
 
 
+@when(parsers.cfparse('user tries to get measures for all devices'))
+def try_get_measures_for_all_devices():
+    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
+    minutes_interval = 10
+    shared_variables.last_response = controller.get_measures_for_all_devices(minutes_interval)
+
+
 @then('device is created successfully')
 def device_created_successfully():
     assert shared_variables.last_response.status_code == 201
