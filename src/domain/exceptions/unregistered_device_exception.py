@@ -1,0 +1,2 @@
+class UnregisteredDeviceException(Exception):
+    pass

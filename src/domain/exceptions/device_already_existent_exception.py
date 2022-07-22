@@ -1,0 +1,2 @@
+class DeviceAlreadyExistentException(Exception):
+    pass
