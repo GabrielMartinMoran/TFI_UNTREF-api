@@ -29,8 +29,8 @@ LAST_MIGRATION_APP_INFO_DATE = 'last_migration_date'
 DB_URL = os.environ.get('DB_URL', 'localhost')
 DB_PORT = os.environ.get('DB_PORT', 5432)
 DB_NAME = os.environ.get('DB_NAME', 'devices_management_dev')
-DB_USERNAME = os.environ.get('DB_USERNAME', None)
-DB_PASSWORD = os.environ.get('DB_PASSWORD', None)
+DB_USERNAME = os.environ.get('DB_USERNAME', 'postgres')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
 
 # --------------------- #
 # -        JWT        - #
