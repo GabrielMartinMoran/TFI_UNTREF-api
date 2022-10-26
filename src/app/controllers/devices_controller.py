@@ -57,6 +57,21 @@ class DevicesController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the measure')
 
+    @route(http_methods.POST)
+    def add_measures(self, device_id: str) -> Response:
+        try:
+            measures = MeasureMapper.map_all(self.get_json_body())
+            device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
+            device_measure_aggregator.add_measures_to_device(device_id, self.get_authenticated_user_id(), measures)
+            return Response.created_successfully()
+        except ModelValidationException as e:
+            return Response.bad_request(message=str(e))
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while creating the measures')
+
     @route(http_methods.GET)
     def get_measures(self, device_id: str, time_interval: int) -> Response:
         try:

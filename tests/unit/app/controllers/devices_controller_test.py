@@ -1,3 +1,5 @@
+import random
+
 from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
 from src.domain.models.device import Device
@@ -82,6 +84,39 @@ def test_add_measure_returns_ok_response_when_measure_was_registered():
     controller.device_repository.exists_for_user = lambda device_id, user_id: True
     controller.measure_repository.create = lambda measure, device_id: None
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 201
+    assert actual.body == {}
+
+
+def test_add_measures_returns_error_response_when_any_measure_is_not_valid():
+    measure = MeasureStub()
+    controller = DevicesController(Request.from_body([{
+        'timestamp': measure.timestamp.isoformat(),
+        'voltage': measure.voltage,
+        'current': None
+    }]))
+    actual = controller.add_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 400
+    assert actual.body['message'] == 'Measure.current must not be None'
+
+
+def test_add_measures_returns_error_response_when_device_is_not_valid_for_user():
+    controller = DevicesController(Request.from_body(MeasureSerializer.serialize_all(
+        [MeasureStub() for x in range(random.randint(1, 10))]
+    )))
+    controller.device_repository.exists_for_user = lambda ble_id, user_id: False
+    actual = controller.add_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905')
+    assert actual.status_code == 400
+    assert actual.body['message'] == 'Device identifier is not valid for logged user'
+
+
+def test_add_measures_returns_ok_response_when_the_measures_were_registered():
+    controller = DevicesController(Request.from_body(MeasureSerializer.serialize_all(
+        [MeasureStub() for x in range(random.randint(1, 10))]
+    )))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: True
+    controller.measure_repository.create_multiple = lambda measures, device_id: None
+    actual = controller.add_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 201
     assert actual.body == {}
 

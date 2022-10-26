@@ -12,6 +12,14 @@ class MeasurePGRepository(PostgresRepository, MeasureRepository):
         self._execute_query(f"INSERT INTO Measures (device_id, voltage, current, timestamp) VALUES ("
                             f"'{device_id}', {measure.voltage}, {measure.current}, '{measure.timestamp}')")
 
+    def create_multiple(self, measures: List[Measure], device_id: str) -> None:
+        if not measures:
+            return
+        values = ', '.join([
+            f"('{device_id}', {measure.voltage}, {measure.current}, '{measure.timestamp}')" for measure in measures
+        ])
+        self._execute_query(f"INSERT INTO Measures (device_id, voltage, current, timestamp) VALUES {values}")
+
     def get_from_last_minutes(self, device_id: str, time_interval: int) -> List[Measure]:
         result = self._execute_query(f"SELECT * FROM Measures WHERE device_id = '{device_id}'"
                                      f"AND timestamp::TIMESTAMP >= (now()::TIMESTAMP - INTERVAL '{time_interval} min')")

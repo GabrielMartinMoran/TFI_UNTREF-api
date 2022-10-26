@@ -1,3 +1,4 @@
+import random
 from datetime import timedelta
 
 from pytest_bdd import given, then, when, parsers
@@ -60,6 +61,19 @@ def try_add_invalid_measure(device_id: str):
     shared_variables.last_response = controller.add_measure(device_id)
 
 
+@when(parsers.cfparse('user tries to add invalid measures for device with id \'{device_id}\''))
+def try_add_invalid_measures(device_id: str):
+    measure_dict = {
+        **MeasureSerializer.serialize(MeasureStub()), **{
+            'voltage': -200.0,
+            'current': -5.0
+        }
+    }
+    controller = DevicesController(request=Request.from_body([measure_dict]),
+                                   auth_info=shared_variables.logged_auth_info)
+    shared_variables.last_response = controller.add_measures(device_id)
+
+
 @when(parsers.cfparse('user tries to get measures for device with id \'{device_id}\''))
 def try_get_measures_for_device(device_id: str):
     controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
@@ -74,6 +88,15 @@ def try_get_measures_for_all_devices():
     shared_variables.last_response = controller.get_measures_for_all_devices(minutes_interval)
 
 
+@when(parsers.cfparse('user tries to add measures for device with id \'{device_id}\''))
+def try_add_valid_measures(device_id: str):
+    controller = DevicesController(
+        request=Request.from_body(
+            MeasureSerializer.serialize_all([MeasureStub() for x in range(random.randint(1, 10))])),
+        auth_info=shared_variables.logged_auth_info)
+    shared_variables.last_response = controller.add_measures(device_id)
+
+
 @then('device is created successfully')
 def device_created_successfully():
     assert shared_variables.last_response.status_code == 201
@@ -81,6 +104,11 @@ def device_created_successfully():
 
 @then('measure is added successfully')
 def measure_added_successfully():
+    assert shared_variables.last_response.status_code == 201
+
+
+@then('measures are added successfully')
+def measures_added_successfully():
     assert shared_variables.last_response.status_code == 201
 
 
