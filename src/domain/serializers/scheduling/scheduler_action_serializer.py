@@ -6,8 +6,8 @@ from src.domain.serializers.serializer import Serializer
 class SchedulerActionSerializer(Serializer):
 
     @classmethod
-    def serialize(cls, model: SchedulerAction) -> dict:
+    def serialize(cls, model: SchedulerAction, use_epochs: bool = False) -> dict:
         return {
             'action': model.action.value,
-            'moment': dates.to_utc_isostring(model.moment)
+            'moment': dates.to_utc_isostring(model.moment) if not use_epochs else dates.to_timestamp(model.moment)
         }

@@ -18,3 +18,6 @@ class BaseController:
         if not self._auth_info:
             return None
         return User.email_to_id(self._auth_info.user_email)
+
+    def get_query_param(self, name: str, default: Optional[str] = None) -> str:
+        return self._request.query_params.get(name, default)

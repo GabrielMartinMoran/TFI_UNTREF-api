@@ -151,7 +151,8 @@ class Router:
 
     @classmethod
     def _call_controller_method(cls, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
-        internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {})
+        internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {},
+                                   dict(request.args))
         controller_instance = method_route.controller_class(**{
             'request': internal_request,
             'auth_info': auth_info

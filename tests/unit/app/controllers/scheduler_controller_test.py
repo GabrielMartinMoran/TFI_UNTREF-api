@@ -74,7 +74,7 @@ def test_get_scheduling_tasks_returns_a_list_of_scheduled_tasks():
 
 @patch('src.common.dates.now', new=lambda: dates.to_datetime('2022-06-22T00:00:00+00:00'))
 def test_get_next_scheduling_action_returns_next_scheduler_action(*args):
-    controller = SchedulerController(None)
+    controller = SchedulerController(Request.from_body({}))
     device_tasks = [
         {
             'action': 'TURN_DEVICE_ON',

@@ -61,8 +61,12 @@ class SchedulerController(BaseController):
         try:
             retriever = DeviceSchedulerRetriever(self.device_repository, self.device_scheduler_repository)
             scheduler_action = retriever.get_next_scheduling_action(device_id, self.get_authenticated_user_id())
+            use_epochs = self.get_query_param('use_epochs', 'false').lower() == 'true'
             return Response.success(
-                SchedulerActionSerializer.serialize(scheduler_action) if scheduler_action is not None else {}
+                SchedulerActionSerializer.serialize(
+                    scheduler_action,
+                    use_epochs=use_epochs
+                ) if scheduler_action is not None else {}
             )
         except ModelValidationException as e:
             Logger.error(e)

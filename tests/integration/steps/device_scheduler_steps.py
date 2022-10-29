@@ -49,7 +49,7 @@ def try_get_valid_tasks(device_id: str):
 
 @when(parsers.cfparse('user tries to get next scheduling tasks for device with id \'{device_id}\''))
 def try_get_nex_scheduling_tasks(device_id: str):
-    controller = SchedulerController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = SchedulerController(request=Request.from_body({}), auth_info=shared_variables.logged_auth_info)
     shared_variables.last_response = controller.get_next_scheduling_action(device_id)
 
 

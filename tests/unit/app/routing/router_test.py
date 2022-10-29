@@ -14,6 +14,7 @@ class MockedRequest:
         self.path = None
         self.json = {}
         self.data = ''
+        self.args = {}
 
 
 class MockedResponse:
