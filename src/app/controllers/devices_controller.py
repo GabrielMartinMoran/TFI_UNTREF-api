@@ -1,4 +1,6 @@
-from src.app.utils.auth_info import AuthInfo
+from typing import Optional
+
+from src.app.utils.auth.token import Token
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
 from pymodelio.exceptions.model_validation_exception import ModelValidationException
@@ -22,8 +24,8 @@ from src.infrastructure.repositories.measure_pg_repository import MeasurePGRepos
 
 class DevicesController(BaseController):
 
-    def __init__(self, request: Request, auth_info: AuthInfo = None) -> None:
-        super().__init__(request, auth_info)
+    def __init__(self, request: Request, token: Optional[Token] = None) -> None:
+        super().__init__(request, token)
         self.device_repository = DevicePGRepository()
         self.measure_repository = MeasurePGRepository()
 

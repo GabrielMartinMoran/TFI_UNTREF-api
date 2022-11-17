@@ -7,8 +7,10 @@ class ControllerRoute:
         self.controller_class = controller_class
         self.methods: List[MethodRoute] = []
 
-    def add_method(self, method_name: str, http_type: str, alias: str, auth_required: bool) -> None:
-        met_route = MethodRoute(self.controller_class, method_name, http_type, alias, auth_required)
+    def add_method(self, method_name: str, http_type: str, alias: str, user_auth_required: bool,
+                   device_auth_required: bool) -> None:
+        met_route = MethodRoute(self.controller_class, method_name, http_type, alias, user_auth_required,
+                                device_auth_required)
         self.methods.append(met_route)
 
     def route(self) -> str:

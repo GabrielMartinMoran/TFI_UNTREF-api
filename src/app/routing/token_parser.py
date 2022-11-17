@@ -1,4 +1,6 @@
-from src.app.utils.auth_info import AuthInfo
+from src.app.utils.auth.device_token import DeviceToken
+from src.app.utils.auth.token import Token
+from src.app.utils.auth.user_token import UserToken
 
 
 class TokenParser:
@@ -7,12 +9,12 @@ class TokenParser:
 
     def __init__(self, request) -> None:
         self._request = request
-        self._auth_info = None
+        self._token = None
         self.__parse_token()
 
     @property
-    def auth_info(self) -> AuthInfo:
-        return self._auth_info
+    def token(self) -> Token:
+        return self._token
 
     def __parse_token(self) -> None:
         try:
@@ -20,7 +22,9 @@ class TokenParser:
             if not token or self.TOKEN_TYPE not in token:
                 return
             token = self.__remove_token_type(token)
-            self._auth_info = AuthInfo.from_token(token)
+            for token_type in {UserToken, DeviceToken}:
+                if token_type.is_encoded_form(token):
+                    self._token = token_type.from_encoded(token)
         except Exception:
             pass
 
@@ -32,4 +36,4 @@ class TokenParser:
         return str_token[len(self.TOKEN_TYPE) + 1:]
 
     def valid_token(self) -> bool:
-        return self.auth_info is not None
+        return self.token is not None

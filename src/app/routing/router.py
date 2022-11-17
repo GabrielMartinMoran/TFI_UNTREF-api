@@ -14,7 +14,9 @@ from .cors_solver import CORSSolver
 from src.app.utils.http.response import Response
 
 import src.app.controllers as controllers_module
-from ..utils.auth_info import AuthInfo
+from src.app.utils.auth.user_token import UserToken
+from ..utils.auth.device_token import DeviceToken
+from ..utils.auth.token import Token
 from ..utils.http.request import Request
 
 EXCLUDED_CONTROLLERS = ['base_controller']
@@ -63,16 +65,20 @@ class Router:
         if routed_method is None:
             return self.error_response('Not found', 404)
 
-        # Si requiere auth_info
+        # If a token is required
         token_parser = TokenParser(request)
-        if routed_method.auth_required and not token_parser.valid_token():
+        if (routed_method.user_auth_required and not (
+                token_parser.valid_token() and isinstance(token_parser.token, UserToken))) or (
+                routed_method.device_auth_required and not (
+                token_parser.valid_token() and isinstance(token_parser.token, DeviceToken))
+        ):
             return self.error_response('Unauthorized', 401)
 
         params = []
         if len(split_path) > 2:
             params = split_path[2:]
         try:
-            return self._call_controller_method(routed_method, request, token_parser.auth_info, *params)
+            return self._call_controller_method(routed_method, request, token_parser.token, *params)
         except TypeError as ex:
             print(
                 F'{console_colors.ERROR}An error has ocurred with message:'
@@ -108,7 +114,7 @@ class Router:
             for method in self.http_methods:
                 if method['class_name'] == controller_route.controller_name():
                     controller_route.add_method(method['method_name'], method['type'], method['alias'],
-                                                method['auth_required'])
+                                                method['user_auth_required'], method['device_auth_required'])
         Logger.debug("Mapeo de rutas finalizado...")
 
     @classmethod
@@ -150,12 +156,12 @@ class Router:
         return None
 
     @classmethod
-    def _call_controller_method(cls, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
+    def _call_controller_method(cls, method_route: MethodRoute, request, token: Token, *method_params):
         internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {},
                                    dict(request.args))
         controller_instance = method_route.controller_class(**{
             'request': internal_request,
-            'auth_info': auth_info
+            'token': token
         })
         method = getattr(controller_instance, method_route.method_name)
         result: Response = method(*method_params)

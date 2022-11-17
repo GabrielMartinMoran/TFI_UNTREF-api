@@ -1,7 +1,7 @@
 from pytest_bdd import given, then, when, parsers
 
 from src.app.controllers.auth_controller import AuthController
-from src.app.utils.auth_info import AuthInfo
+from src.app.utils.auth.user_token import UserToken
 from src.app.utils.http.request import Request
 from src.domain.models.user import User
 from src.infrastructure.repositories.user_pg_repository import UserPGRepository
@@ -22,7 +22,7 @@ def user_is_logged_in():
         'password': user_password
     }))
     encoded_token = auth_controller.login().body['token']
-    shared_variables.logged_auth_info = AuthInfo.from_token(encoded_token)
+    shared_variables.token = UserToken.from_encoded(encoded_token)
 
 
 @when(parsers.cfparse('user tries to login with email \'{email}\' and password \'{password}\''))
@@ -36,8 +36,10 @@ def try_user_login(email: str, password: str):
 
 @then('user logs in successfully')
 def user_login_successfully():
+    token = shared_variables.last_response.body['token']
     assert shared_variables.last_response.status_code == 200
-    assert len(shared_variables.last_response.body['token']) > 0
+    assert len(token) > 0
+    assert UserToken.is_encoded_form(token)
 
 
 @then('user login fails')

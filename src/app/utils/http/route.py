@@ -9,14 +9,15 @@ def _normalize_alias(alias: str) -> Optional[str]:
     return None
 
 
-def route(method_type: str, alias: str = None, auth_required: bool = True):
+def route(method_type: str, alias: str = None, user_auth_required: bool = True, device_auth_required: bool = False):
     def wrapper(func):
         Router.register_http_method({
             'type': method_type,
             'alias': _normalize_alias(alias),
             'class_name': func.__qualname__.split('.')[0],
             'method_name': func.__name__,
-            'auth_required': auth_required
+            'user_auth_required': user_auth_required,
+            'device_auth_required': device_auth_required
         })
         return func
 

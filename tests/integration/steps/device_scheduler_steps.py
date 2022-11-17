@@ -37,19 +37,19 @@ def try_set_valid_scheduling_tasks(device_id: str):
         tasks.append(TaskStub())
         tasks.append(DailyTaskStub())
     controller = SchedulerController(request=Request.from_body(TaskSerializer.serialize_all(tasks)),
-                                     auth_info=shared_variables.logged_auth_info)
+                                     token=shared_variables.token)
     shared_variables.last_response = controller.set_scheduling_tasks(device_id)
 
 
 @when(parsers.cfparse('user tries to get scheduling tasks for device with id \'{device_id}\''))
 def try_get_valid_tasks(device_id: str):
-    controller = SchedulerController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = SchedulerController(request=None, token=shared_variables.token)
     shared_variables.last_response = controller.get_scheduling_tasks(device_id)
 
 
 @when(parsers.cfparse('user tries to get next scheduling tasks for device with id \'{device_id}\''))
 def try_get_nex_scheduling_tasks(device_id: str):
-    controller = SchedulerController(request=Request.from_body({}), auth_info=shared_variables.logged_auth_info)
+    controller = SchedulerController(request=Request.from_body({}), token=shared_variables.token)
     shared_variables.last_response = controller.get_next_scheduling_action(device_id)
 
 

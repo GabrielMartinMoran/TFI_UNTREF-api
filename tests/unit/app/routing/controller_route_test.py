@@ -13,7 +13,7 @@ def controller_route():
 
 def test_add_method_adds_method_route_to_methods_when_called(controller_route):
     expected = 'controller_method'
-    controller_route.add_method(expected, 'POST', 'method_alias', False)
+    controller_route.add_method(expected, 'POST', 'method_alias', False, False)
     assert 1 == len(controller_route.methods)
     assert expected == controller_route.methods[0].method_name
 

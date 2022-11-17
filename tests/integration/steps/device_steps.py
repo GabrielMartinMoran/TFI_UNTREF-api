@@ -19,7 +19,7 @@ from tests.model_stubs.measure_stub import MeasureStub
 def device_exists_for_logged_user(device_id: str):
     device_repository = DevicePGRepository()
     device = Device(name=device_id, device_id=device_id)
-    user_id = User.email_to_id(shared_variables.logged_auth_info.user_email)
+    user_id = User.email_to_id(shared_variables.token.user_email)
     if not device_repository.exists_for_user(device_id, user_id):
         device_repository.create(device, user_id)
 
@@ -38,14 +38,14 @@ def device_has_recent_measures(device_id: str):
 def try_user_login(device_name: str):
     controller = DevicesController(request=Request.from_body({
         'name': device_name
-    }), auth_info=shared_variables.logged_auth_info)
+    }), token=shared_variables.token)
     shared_variables.last_response = controller.create()
 
 
 @when(parsers.cfparse('user tries to add a measure for device with id \'{device_id}\''))
 def try_add_valid_measure(device_id: str):
     controller = DevicesController(request=Request.from_body(MeasureSerializer.serialize(MeasureStub())),
-                                   auth_info=shared_variables.logged_auth_info)
+                                   token=shared_variables.token)
     shared_variables.last_response = controller.add_measure(device_id)
 
 
@@ -57,7 +57,7 @@ def try_add_invalid_measure(device_id: str):
             'current': -5.0
         }
     }
-    controller = DevicesController(request=Request.from_body(measure_dict), auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=Request.from_body(measure_dict), token=shared_variables.token)
     shared_variables.last_response = controller.add_measure(device_id)
 
 
@@ -70,20 +70,20 @@ def try_add_invalid_measures(device_id: str):
         }
     }
     controller = DevicesController(request=Request.from_body([measure_dict]),
-                                   auth_info=shared_variables.logged_auth_info)
+                                   token=shared_variables.token)
     shared_variables.last_response = controller.add_measures(device_id)
 
 
 @when(parsers.cfparse('user tries to get measures for device with id \'{device_id}\''))
 def try_get_measures_for_device(device_id: str):
-    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=None, token=shared_variables.token)
     minutes_interval = 10
     shared_variables.last_response = controller.get_measures(device_id, minutes_interval)
 
 
 @when(parsers.cfparse('user tries to get measures for all devices'))
 def try_get_measures_for_all_devices():
-    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=None, token=shared_variables.token)
     minutes_interval = 10
     shared_variables.last_response = controller.get_measures_for_all_devices(minutes_interval)
 
@@ -93,7 +93,7 @@ def try_add_valid_measures(device_id: str):
     controller = DevicesController(
         request=Request.from_body(
             MeasureSerializer.serialize_all([MeasureStub() for x in range(random.randint(1, 10))])),
-        auth_info=shared_variables.logged_auth_info)
+        token=shared_variables.token)
     shared_variables.last_response = controller.add_measures(device_id)
 
 
