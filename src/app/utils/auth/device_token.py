@@ -1,6 +1,7 @@
 from pymodelio import Attribute, pymodelio_model
 from pymodelio.validators import StringValidator
 
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
 from src.common import dates
 
@@ -39,3 +40,7 @@ class DeviceToken(Token):
     @classmethod
     def _get_type_prefix(cls) -> str:
         return 'd'
+
+    @property
+    def permission_level(self) -> PermissionLevel:
+        return PermissionLevel.DEVICE

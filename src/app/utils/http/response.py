@@ -50,6 +50,12 @@ class Response:
             'message': message
         } if message else {})
 
+    @staticmethod
+    def unauthorized() -> 'Response':
+        return Response(status_code=401, body={
+            'message': 'Unauthorized'
+        })
+
     def jsonify(self) -> HTTPResponse:
         jsonified_response = jsonify(self.body)
         jsonified_response.status_code = self.status_code

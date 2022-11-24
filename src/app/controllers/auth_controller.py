@@ -3,6 +3,7 @@ from typing import Optional
 from pymodelio.exceptions import ModelValidationException
 
 from src.app.controllers.base_controller import BaseController
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
 from src.app.utils.auth.user_token import UserToken
 from src.app.utils.http.request import Request
@@ -31,7 +32,7 @@ class AuthController(BaseController):
         self.user_repository = UserPGRepository()
         self.device_repository = DevicePGRepository()
 
-    @route(http_methods.POST, user_auth_required=False)
+    @route(http_methods.POST, min_permission_level=PermissionLevel.PUBLIC)
     def register(self) -> Response:
         try:
             user = UserMapper.map(self.get_json_body())
@@ -46,7 +47,7 @@ class AuthController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating user')
 
-    @route(http_methods.POST, user_auth_required=False)
+    @route(http_methods.POST, min_permission_level=PermissionLevel.PUBLIC)
     def login(self) -> Response:
         body = self.get_json_body()
         user_logger = UserLogger(self.user_repository)

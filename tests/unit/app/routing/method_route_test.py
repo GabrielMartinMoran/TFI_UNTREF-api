@@ -1,11 +1,12 @@
 import pytest
 
 from src.app.routing.method_route import MethodRoute
+from src.app.utils.auth.permission_level import PermissionLevel
 
 
 @pytest.fixture
 def method_route():
-    return MethodRoute("class", "method", "http_type", "method_alias", False, False)
+    return MethodRoute('class', 'method', 'http_type', 'method_alias', PermissionLevel.PUBLIC)
 
 
 def test_get_path_returns_alias_when_alias_is_not_none(method_route):

@@ -4,6 +4,7 @@ from datetime import datetime
 from pymodelio import Attribute, pymodelio_model
 from pymodelio.validators import DatetimeValidator
 
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.jwt_helper import JWTHelper
 from src.common import dates
 
@@ -47,3 +48,7 @@ class Token:
     @classmethod
     def is_encoded_form(cls, token: str) -> bool:
         return token.startswith(cls._get_type_prefix())
+
+    @property
+    @abstractmethod
+    def permission_level(self) -> PermissionLevel: pass

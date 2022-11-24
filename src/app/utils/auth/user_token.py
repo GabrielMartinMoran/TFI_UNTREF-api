@@ -1,6 +1,7 @@
 from pymodelio import Attribute
 from pymodelio.validators import StringValidator
 
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
 from src.common import dates
 from src.domain.models.user import User
@@ -36,3 +37,7 @@ class UserToken(Token):
     @classmethod
     def _get_type_prefix(cls) -> str:
         return 'u'
+
+    @property
+    def permission_level(self) -> PermissionLevel:
+        return PermissionLevel.USER

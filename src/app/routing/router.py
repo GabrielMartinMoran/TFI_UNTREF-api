@@ -4,20 +4,19 @@ import pkgutil
 from pydoc import locate
 from flask import make_response
 
-from ..controllers.base_controller import BaseController
-from ..utils import global_variables, console_colors
+from src.app.controllers.base_controller import BaseController
+from src.app.utils import global_variables, console_colors
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.logging.logger import Logger
-from .controller_route import ControllerRoute
-from .method_route import MethodRoute
-from .token_parser import TokenParser
-from .cors_solver import CORSSolver
+from src.app.routing.controller_route import ControllerRoute
+from src.app.routing.method_route import MethodRoute
+from src.app.routing.token_parser import TokenParser
+from src.app.routing.cors_solver import CORSSolver
 from src.app.utils.http.response import Response
 
 import src.app.controllers as controllers_module
-from src.app.utils.auth.user_token import UserToken
-from ..utils.auth.device_token import DeviceToken
-from ..utils.auth.token import Token
-from ..utils.http.request import Request
+from src.app.utils.auth.token import Token
+from src.app.utils.http.request import Request
 
 EXCLUDED_CONTROLLERS = ['base_controller']
 
@@ -67,11 +66,7 @@ class Router:
 
         # If a token is required
         token_parser = TokenParser(request)
-        if (routed_method.user_auth_required and not (
-                token_parser.valid_token() and isinstance(token_parser.token, UserToken))) or (
-                routed_method.device_auth_required and not (
-                token_parser.valid_token() and isinstance(token_parser.token, DeviceToken))
-        ):
+        if not self._has_permission(routed_method.min_permission_level, token_parser.token):
             return self.error_response('Unauthorized', 401)
 
         params = []
@@ -114,7 +109,7 @@ class Router:
             for method in self.http_methods:
                 if method['class_name'] == controller_route.controller_name():
                     controller_route.add_method(method['method_name'], method['type'], method['alias'],
-                                                method['user_auth_required'], method['device_auth_required'])
+                                                method['min_permission_level'])
         Logger.debug("Mapeo de rutas finalizado...")
 
     @classmethod
@@ -166,3 +161,9 @@ class Router:
         method = getattr(controller_instance, method_route.method_name)
         result: Response = method(*method_params)
         return result.jsonify()
+
+    @classmethod
+    def _has_permission(cls, min_permission_level: PermissionLevel, token: Optional[Token]) -> bool:
+        if token is None:
+            return min_permission_level == PermissionLevel.PUBLIC
+        return token.permission_level.value >= min_permission_level.value

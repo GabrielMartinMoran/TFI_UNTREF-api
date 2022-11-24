@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
@@ -44,13 +45,16 @@ class DevicesController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the device')
 
-    @route(http_methods.POST)
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
     def add_measure(self, device_id: str) -> Response:
         try:
+            self._validate_device_permission(device_id)
             measure = MeasureMapper.map(self.get_json_body())
             device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
             device_measure_aggregator.add_measure_to_device(device_id, self.get_authenticated_user_id(), measure)
             return Response.created_successfully()
+        except PermissionError:
+            return Response.unauthorized()
         except ModelValidationException as e:
             return Response.bad_request(message=str(e))
         except UnregisteredDeviceException:
@@ -59,13 +63,16 @@ class DevicesController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the measure')
 
-    @route(http_methods.POST)
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
     def add_measures(self, device_id: str) -> Response:
         try:
+            self._validate_device_permission(device_id)
             measures = MeasureMapper.map_all(self.get_json_body())
             device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
             device_measure_aggregator.add_measures_to_device(device_id, self.get_authenticated_user_id(), measures)
             return Response.created_successfully()
+        except PermissionError:
+            return Response.unauthorized()
         except ModelValidationException as e:
             return Response.bad_request(message=str(e))
         except UnregisteredDeviceException:

@@ -4,6 +4,7 @@ from src.app.routing.router import Router
 from src.app.utils import global_variables
 from src.app.routing import router, cors_solver
 from src.app.utils.auth.device_token import DeviceToken
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.user_token import UserToken
 from src.app.utils.http.response import Response
 
@@ -41,10 +42,10 @@ class MockedController:
     def mocked_http_endpoint_with_params(self, param1, param2):
         return Response(200, {'param1': param1, 'param2': param2})
 
-    def mocked_http_endpoint_with_user_auth_required(self):
+    def mocked_http_endpoint_with_user_permission_level(self):
         return Response(200, {'message': 'OK'})
 
-    def mocked_http_endpoint_with_device_auth_required(self):
+    def mocked_http_endpoint_with_device_permission_level(self):
         return Response(200, {'message': 'OK'})
 
     def mocked_http_endpoint_that_raises_exception(self):
@@ -60,26 +61,24 @@ class MockedController:
 def discover_controllers_mocked(router_instance):
     Router.register_http_method({
         'type': 'POST', 'alias': None, 'class_name': 'MockedController', 'method_name': 'mocked_http_endpoint',
-        'user_auth_required': False, 'device_auth_required': False
+        'min_permission_level': PermissionLevel.PUBLIC
     })
     Router.register_http_method({
         'type': 'GET', 'alias': None, 'class_name': 'MockedController',
-        'method_name': 'mocked_http_endpoint_with_params', 'user_auth_required': False, 'device_auth_required': False
+        'method_name': 'mocked_http_endpoint_with_params', 'min_permission_level': PermissionLevel.PUBLIC
     })
     Router.register_http_method({
         'type': 'GET', 'alias': None, 'class_name': 'MockedController',
-        'method_name': 'mocked_http_endpoint_with_user_auth_required', 'user_auth_required': True,
-        'device_auth_required': False
+        'method_name': 'mocked_http_endpoint_with_user_permission_level', 'min_permission_level': PermissionLevel.USER
     })
     Router.register_http_method({
         'type': 'GET', 'alias': None, 'class_name': 'MockedController',
-        'method_name': 'mocked_http_endpoint_with_device_auth_required', 'user_auth_required': False,
-        'device_auth_required': True
+        'method_name': 'mocked_http_endpoint_with_device_permission_level',
+        'min_permission_level': PermissionLevel.DEVICE
     })
     Router.register_http_method({
         'type': 'GET', 'alias': None, 'class_name': 'MockedController',
-        'method_name': 'mocked_http_endpoint_that_raises_exception', 'user_auth_required': False,
-        'device_auth_required': False
+        'method_name': 'mocked_http_endpoint_that_raises_exception', 'min_permission_level': PermissionLevel.PUBLIC
     })
     return [MockedController]
 
@@ -115,7 +114,7 @@ def test_router_map_rutes_when_instantiated():
     assert 'mocked_http_endpoint' == router.routes[0].methods[0].method_name
     assert 'POST' == router.routes[0].methods[0].http_type
     assert not router.routes[0].methods[0].alias
-    assert not router.routes[0].methods[0].user_auth_required
+    assert router.routes[0].methods[0].min_permission_level == PermissionLevel.PUBLIC
 
 
 def test_route_returns_error_response_when_controller_is_not_in_path(router):
@@ -189,42 +188,42 @@ def test_route_returns_cors_response_when_cors_requested_in_valid_endpoint(route
 
 def test_route_returns_error_response_when_user_token_is_required_and_not_provided(router):
     request = MockedRequest('GET')
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_auth_required')
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_permission_level')
     assert actual.body['message'] == 'Unauthorized'
     assert actual.code == 401
 
 
 def test_route_returns_error_response_when_user_token_is_required_and_a_device_one_is_used_instead(router):
     request = MockedRequest('GET', {'Authorization': create_device_token('device_012345', 'user_012345')})
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_auth_required')
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_permission_level')
     assert actual.body['message'] == 'Unauthorized'
     assert actual.code == 401
 
 
 def test_route_returns_ok_response_when_user_token_is_required_and_provided(router):
     request = MockedRequest('GET', {'Authorization': create_user_token('test_user@test.com')})
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_auth_required')
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_user_permission_level')
     assert actual.body['message'] == 'OK'
     assert actual.code == 200
 
 
 def test_route_returns_error_response_when_device_token_is_required_and_not_provided(router):
     request = MockedRequest('GET')
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_auth_required')
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_permission_level')
     assert actual.body['message'] == 'Unauthorized'
     assert actual.code == 401
 
 
-def test_route_returns_error_response_when_device_token_is_required_and_an_user_one_is_used_instead(router):
+def test_route_returns_ok_response_when_device_token_is_required_and_an_user_one_is_used_instead(router):
     request = MockedRequest('GET', {'Authorization': create_user_token('test_user@test.com')})
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_auth_required')
-    assert actual.body['message'] == 'Unauthorized'
-    assert actual.code == 401
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_permission_level')
+    assert actual.body['message'] == 'OK'
+    assert actual.code == 200
 
 
 def test_route_returns_ok_response_when_device_token_is_required_and_provided(router):
     request = MockedRequest('GET', {'Authorization': create_device_token('device_012345', 'user_012345')})
-    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_auth_required')
+    actual = router.route(request, 'mocked/mocked_http_endpoint_with_device_permission_level')
     assert actual.body['message'] == 'OK'
     assert actual.code == 200
 

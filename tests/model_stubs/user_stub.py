@@ -7,7 +7,7 @@ _EMAIL_DOMAINS = ['gmail.com', 'hotmail.co.uk', 'yandex.ru']
 _LOWERCASE_LETTERS = list(string.ascii_lowercase)
 _UPPERCASE_LETTERS = list(string.ascii_uppercase)
 _DIGITS = list(string.digits)
-_EMAIL_CHARACTERS = _DIGITS + _LOWERCASE_LETTERS + _UPPERCASE_LETTERS + list('._%+-')
+_EMAIL_CHARACTERS = _DIGITS + _LOWERCASE_LETTERS + _UPPERCASE_LETTERS + list('._')
 _MAX_EMAIL_HEAD_SIZE = 64
 _VALID_USERNAME_CHARACTERS = [x for x in list(string.printable) if x not in ['\t', '\n', '\r', '\x0b', '\x0c']]
 
@@ -17,7 +17,7 @@ def _generate_random_email() -> str:
     for x in range(random.randint(1, _MAX_EMAIL_HEAD_SIZE)):
         email_head += random.choice(_EMAIL_CHARACTERS)
     # Email can not start with '.'
-    while email_head.startswith('.'):
+    while email_head.startswith('.') or email_head.startswith('_'):
         email_head = random.choice(_EMAIL_CHARACTERS) + email_head[1:]
     return f'{email_head}@{random.choice(_EMAIL_DOMAINS)}'
 

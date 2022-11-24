@@ -1,5 +1,6 @@
 from typing import List
-from .method_route import MethodRoute
+from src.app.routing.method_route import MethodRoute
+from src.app.utils.auth.permission_level import PermissionLevel
 
 
 class ControllerRoute:
@@ -7,10 +8,8 @@ class ControllerRoute:
         self.controller_class = controller_class
         self.methods: List[MethodRoute] = []
 
-    def add_method(self, method_name: str, http_type: str, alias: str, user_auth_required: bool,
-                   device_auth_required: bool) -> None:
-        met_route = MethodRoute(self.controller_class, method_name, http_type, alias, user_auth_required,
-                                device_auth_required)
+    def add_method(self, method_name: str, http_type: str, alias: str, min_permission_level: PermissionLevel) -> None:
+        met_route = MethodRoute(self.controller_class, method_name, http_type, alias, min_permission_level)
         self.methods.append(met_route)
 
     def route(self) -> str:
