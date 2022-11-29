@@ -333,6 +333,8 @@ def test_update_state_returns_ok_response_when_device_state_is_valid():
 
 def test_update_state_returns_error_response_when_device_state_is_not_valid():
     controller = DevicesController(Request.from_body({'turned_on': None}))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: True
+    controller.device_repository.update_state = lambda device_id, user_id, turned_on, last_status_update: None
     actual = controller.update_state('test_device_id')
     assert actual.status_code == 400
     assert actual.body == {'message': 'turned_on must be a valid boolean'}

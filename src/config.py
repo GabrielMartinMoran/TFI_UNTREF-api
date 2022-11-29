@@ -66,3 +66,8 @@ class ErrorCodes:
 # -MEASURES SUMMARIZER- #
 # --------------------- #
 MAX_SUMMARIZED_MEASURES_TO_SHOW = 25
+
+# --------------------- #
+# -  INSTANT ACTIONS  - #
+# --------------------- #
+INSTANT_ACTIONS_LIFETIME = 20  # Seconds
