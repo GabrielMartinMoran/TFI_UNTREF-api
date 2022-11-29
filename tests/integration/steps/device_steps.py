@@ -97,6 +97,15 @@ def try_add_valid_measures(device_id: str):
     shared_variables.last_response = controller.add_measures(device_id)
 
 
+@when(parsers.cfparse('user tries to update the device state as turned_on for device with id \'{device_id}\''))
+def try_update_device_state_to_turned_on(device_id: str):
+    controller = DevicesController(
+        request=Request.from_body({'turned_on': True}),
+        token=shared_variables.token
+    )
+    shared_variables.last_response = controller.update_state(device_id)
+
+
 @then('device is created successfully')
 def device_created_successfully():
     assert shared_variables.last_response.status_code == 201
@@ -126,3 +135,8 @@ def summarized_measures_returned_successfully():
         assert 'voltage' in measure
         assert 'power' in measure
         assert 'timestamp' in measure
+
+
+@then('device state is updated successfully')
+def device_state_updated_successfully():
+    assert shared_variables.last_response.status_code == 200

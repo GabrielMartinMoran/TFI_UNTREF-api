@@ -1,6 +1,8 @@
 import json
+from datetime import datetime
 from typing import List
 
+from src.common import dates
 from src.domain.mappers.device_mapper import DeviceMapper
 from src.domain.mappers.scheduling.tasks.task_mapper import TaskMapper
 from src.domain.models.device import Device
@@ -49,3 +51,10 @@ class DevicePGRepository(PostgresRepository, DeviceRepository):
         if not res.records:
             return []
         return TaskMapper.map_all(res.first()['tasks'])
+
+    def update_state(self, device_id: str, user_id: str, turned_on: bool, last_status_update: datetime) -> None:
+        self._execute_query(
+            f"UPDATE Devices SET turned_on={str(turned_on).lower()},"
+            f" last_status_update='{dates.to_utc_isostring(last_status_update)}'"
+            f" WHERE device_id='{device_id}' AND user_id = '{user_id}'"
+        )

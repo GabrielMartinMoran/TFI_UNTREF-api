@@ -13,6 +13,7 @@ from src.domain.serializers.measure_serializer import MeasureSerializer
 from src.domain.services.devices.device_creator import DeviceCreator
 from src.domain.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.domain.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
+from src.domain.services.devices.device_state_modifier import DeviceStateModifier
 from src.domain.services.devices.devices_obtainer import DevicesRetriever
 from src.app.utils.http.response import Response
 from src.app.utils.http.route import route
@@ -112,3 +113,21 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain measures')
+
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
+    def update_state(self, device_id: str) -> Response:
+        try:
+            self._validate_device_permission(device_id)
+            turned_on = self.get_json_body().get('turned_on')
+            if not isinstance(turned_on, bool):
+                return Response.bad_request(message='turned_on must be a valid boolean')
+            device_state_updater = DeviceStateModifier(self.device_repository)
+            device_state_updater.update(device_id, self.get_authenticated_user_id(), turned_on)
+            return Response.success()
+        except PermissionError:
+            return Response.unauthorized()
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while updating the state')

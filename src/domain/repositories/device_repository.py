@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List
 
 from src.domain.models.device import Device
@@ -21,3 +22,6 @@ class DeviceRepository(ABC):
 
     @abstractmethod
     def get_scheduling_tasks(self, device_id: str) -> List[Task]: pass
+
+    @abstractmethod
+    def update_state(self, device_id: str, user_id: str, turned_on: bool, last_status_update: datetime) -> None: pass

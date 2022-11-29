@@ -18,15 +18,6 @@ def test_device_controller_instantiate_measure_repository_when_instantiated():
     assert controller.measure_repository is not None
 
 
-"""
-def test_generate_ble_id_generates_unique_ble_id():
-    controller = DevicesController(None)
-    actual = controller.generate_ble_id()
-    assert actual.status_code == 200
-    assert isinstance(actual.body['device_id'], str)
-"""
-
-
 def test_create_returns_error_response_when_device_is_not_valid():
     controller = DevicesController(Request.from_body({
         'name': None
@@ -330,3 +321,18 @@ def test_get_measures_for_all_devices_returns_summarized_measures_for_all_device
     actual = controller.get_measures_for_all_devices(5)
     assert actual.status_code == 200
     assert actual.body == expected
+
+
+def test_update_state_returns_ok_response_when_device_state_is_valid():
+    controller = DevicesController(Request.from_body({'turned_on': True}))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: True
+    controller.device_repository.update_state = lambda device_id, user_id, turned_on, last_status_update: None
+    actual = controller.update_state('test_device_id')
+    assert actual.status_code == 200
+
+
+def test_update_state_returns_error_response_when_device_state_is_not_valid():
+    controller = DevicesController(Request.from_body({'turned_on': None}))
+    actual = controller.update_state('test_device_id')
+    assert actual.status_code == 400
+    assert actual.body == {'message': 'turned_on must be a valid boolean'}

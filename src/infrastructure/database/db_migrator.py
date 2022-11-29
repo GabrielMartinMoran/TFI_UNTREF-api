@@ -7,11 +7,13 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from src.common import dates
 from src.infrastructure.database.migrations.migration_001 import Migration001
+from src.infrastructure.database.migrations.migration_002 import Migration002
 
 
 class DBMigrator:
     MIGRATIONS = [
-        Migration001
+        Migration001,
+        Migration002
     ]
 
     def __init__(self):
