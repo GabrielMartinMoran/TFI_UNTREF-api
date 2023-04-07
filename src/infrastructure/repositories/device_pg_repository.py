@@ -14,12 +14,12 @@ from src.infrastructure.repositories.postgres_repository import PostgresReposito
 
 class DevicePGRepository(PostgresRepository, DeviceRepository):
 
-    def create(self, device: Device, user_id: int) -> None:
+    def create(self, device: Device, user_id: str) -> None:
         self._execute_query(f"INSERT INTO Devices (device_id, user_id, name, active, turned_on) VALUES "
                             f"('{device.device_id}', '{user_id}', '{device.name}', {device.active}, "
                             f"{device.turned_on})")
 
-    def exists_for_user(self, device_id: str, user_id: int) -> bool:
+    def exists_for_user(self, device_id: str, user_id: str) -> bool:
         res = self._execute_query(f"SELECT COUNT(device_id) FROM Devices WHERE device_id = '{device_id}' AND "
                                   f"user_id = '{user_id}'")
         return res.first()['count'] > 0
@@ -58,3 +58,11 @@ class DevicePGRepository(PostgresRepository, DeviceRepository):
             f" last_status_update='{dates.to_utc_isostring(last_status_update)}'"
             f" WHERE device_id='{device_id}' AND user_id = '{user_id}'"
         )
+
+    def get_state(self, device_id: str, user_id: str) -> bool:
+        res = self._execute_query(
+            f"SELECT turned_on FROM Devices WHERE device_id = '{device_id}' AND user_id = '{user_id}'"
+        )
+        if not res.records:
+            return False
+        return res.first()['turned_on']

@@ -19,9 +19,8 @@ from tests.model_stubs.measure_stub import MeasureStub
 def device_exists_for_logged_user(device_id: str):
     device_repository = DevicePGRepository()
     device = Device(name=device_id, device_id=device_id)
-    user_id = User.email_to_id(shared_variables.token.user_email)
-    if not device_repository.exists_for_user(device_id, user_id):
-        device_repository.create(device, user_id)
+    if not device_repository.exists_for_user(device_id, shared_variables.user_id):
+        device_repository.create(device, shared_variables.user_id)
 
 
 @given(parsers.cfparse('device with id \'{device_id}\' has recent measures'))
@@ -32,6 +31,12 @@ def device_has_recent_measures(device_id: str):
         measure = MeasureStub(timestamp=dates.now() - timedelta(minutes=minutes_interval))
         measure_repository.create(measure, device_id)
         minutes_interval += 0.5
+
+
+@given(parsers.cfparse('the state for device with id \'{device_id}\' is turned on'))
+def device_is_turned_on(device_id: str):
+    device_repository = DevicePGRepository()
+    device_repository.update_state(device_id, shared_variables.user_id, True, dates.now())
 
 
 @when(parsers.cfparse('user tries to create device with name \'{device_name}\''))
@@ -106,6 +111,12 @@ def try_update_device_state_to_turned_on(device_id: str):
     shared_variables.last_response = controller.update_state(device_id)
 
 
+@when(parsers.cfparse('user tries to get the device state for device with id \'{device_id}\''))
+def try_get_device_state(device_id: str):
+    controller = DevicesController(request=Request.from_body({}), token=shared_variables.token)
+    shared_variables.last_response = controller.get_state(device_id)
+
+
 @then('device is created successfully')
 def device_created_successfully():
     assert shared_variables.last_response.status_code == 201
@@ -140,3 +151,9 @@ def summarized_measures_returned_successfully():
 @then('device state is updated successfully')
 def device_state_updated_successfully():
     assert shared_variables.last_response.status_code == 200
+
+
+@then('device state is turned on')
+def device_state_is_turned_on():
+    assert shared_variables.last_response.status_code == 200
+    assert shared_variables.last_response.body == {'turned_on': True}

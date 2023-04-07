@@ -13,7 +13,7 @@ class DeviceSchedulerUpdater:
         self._device_repository = device_repository
         self._device_scheduler_repository = device_scheduler_repository
 
-    def set_scheduling_tasks(self, device_id: str, user_id: int, tasks: List[Task]) -> None:
+    def set_scheduling_tasks(self, device_id: str, user_id: str, tasks: List[Task]) -> None:
         if not self._device_repository.exists_for_user(device_id, user_id):
             raise DeviceNotFoundException()
         self._device_scheduler_repository.set_scheduling_tasks(device_id, tasks)

@@ -25,3 +25,6 @@ class DeviceRepository(ABC):
 
     @abstractmethod
     def update_state(self, device_id: str, user_id: str, turned_on: bool, last_status_update: datetime) -> None: pass
+
+    @abstractmethod
+    def get_state(self, device_id: str, user_id: str) -> bool: pass

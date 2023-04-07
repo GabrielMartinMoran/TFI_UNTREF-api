@@ -338,3 +338,28 @@ def test_update_state_returns_error_response_when_device_state_is_not_valid():
     actual = controller.update_state('test_device_id')
     assert actual.status_code == 400
     assert actual.body == {'message': 'turned_on must be a valid boolean'}
+
+
+def test_update_state_returns_error_response_when_device_is_not_valid_for_provided_user():
+    controller = DevicesController(Request.from_body({'turned_on': True}))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: False
+    actual = controller.update_state('test_device_id')
+    assert actual.status_code == 400
+    assert actual.body == {'message': 'Device identifier is not valid for logged user'}
+
+
+def test_get_state_returns_device_turned_on_state_when_device_is_valid():
+    controller = DevicesController(Request.from_body({}))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: True
+    controller.device_repository.get_state = lambda device_id, user_id: True
+    actual = controller.get_state('test_device_id')
+    assert actual.status_code == 200
+    assert actual.body == {'turned_on': True}
+
+
+def test_get_state_returns_error_response_when_device_is_not_valid_for_provided_user():
+    controller = DevicesController(Request.from_body({}))
+    controller.device_repository.exists_for_user = lambda device_id, user_id: False
+    actual = controller.get_state('test_device_id')
+    assert actual.status_code == 400
+    assert actual.body == {'message': 'Device identifier is not valid for logged user'}

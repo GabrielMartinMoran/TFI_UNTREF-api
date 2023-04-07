@@ -17,6 +17,8 @@ def user_is_logged_in():
     if not user_repository.exists(user.user_id):
         user_repository.create(user)
 
+    shared_variables.user_id = user.user_id
+
     auth_controller = AuthController(Request.from_body({
         'email': user_email,
         'password': user_password

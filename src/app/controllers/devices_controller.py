@@ -13,7 +13,8 @@ from src.domain.serializers.measure_serializer import MeasureSerializer
 from src.domain.services.devices.device_creator import DeviceCreator
 from src.domain.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.domain.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
-from src.domain.services.devices.device_state_modifier import DeviceStateModifier
+from src.domain.services.devices.device_state.device_state_modifier import DeviceStateModifier
+from src.domain.services.devices.device_state.device_state_retriever import DeviceStateRetriever
 from src.domain.services.devices.devices_obtainer import DevicesRetriever
 from src.app.utils.http.response import Response
 from src.app.utils.http.route import route
@@ -131,3 +132,18 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while updating the state')
+
+    @route(http_methods.GET, min_permission_level=PermissionLevel.DEVICE)
+    def get_state(self, device_id: str) -> Response:
+        try:
+            self._validate_device_permission(device_id)
+            device_state_retriever = DeviceStateRetriever(self.device_repository)
+            turned_on = device_state_retriever.get(device_id, self.get_authenticated_user_id())
+            return Response.success({'turned_on': turned_on})
+        except PermissionError:
+            return Response.unauthorized()
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while getting the state')

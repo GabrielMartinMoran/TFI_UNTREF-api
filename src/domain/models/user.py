@@ -34,14 +34,14 @@ class User:
 
     @property
     def user_id(self) -> str:
-        return User.email_to_id(self.email)
+        return self.email_to_id(self.email)
 
     @property
     def hashed_password(self) -> str:
         return self._hashed_password
 
-    @staticmethod
-    def email_to_id(email: str) -> str:
+    @classmethod
+    def email_to_id(cls, email: str) -> str:
         return IdGenerator.generate_id(email)
 
     def password_matches(self, non_hashed_password) -> bool:
