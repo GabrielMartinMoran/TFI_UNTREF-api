@@ -28,6 +28,7 @@ loguru==0.5.3
 Mako==1.1.4
 MarkupSafe==1.1.1
 mccabe==0.6.1
+numpy==1.24.2
 packaging==20.9
 parse==1.19.0
 parse-type==0.5.2

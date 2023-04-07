@@ -1,6 +1,8 @@
 from typing import List
 from datetime import timedelta
 
+import numpy as np
+
 from src import config
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
 from src.domain.models.measure import Measure
@@ -42,8 +44,8 @@ class DeviceMeasureSummarizer:
             ungrouped_measures = [measure for measure in ungrouped_measures if measure not in filtered_measures]
             grouped_measures.append(Measure(
                 timestamp=dt,
-                current=sum([measure.current for measure in filtered_measures]) / len(filtered_measures),
-                voltage=sum([measure.voltage for measure in filtered_measures]) / len(filtered_measures)
+                current=np.mean([measure.current for measure in filtered_measures]),
+                voltage=np.mean([measure.voltage for measure in filtered_measures])
             ))
 
         return grouped_measures
