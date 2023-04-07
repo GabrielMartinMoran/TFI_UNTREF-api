@@ -1,4 +1,3 @@
-from src.common import dates
 from src.domain.exceptions.unregistered_device_exception import UnregisteredDeviceException
 from src.domain.repositories.device_repository import DeviceRepository
 

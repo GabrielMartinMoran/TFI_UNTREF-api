@@ -7,7 +7,6 @@ from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
 from src.common import dates
 from src.domain.models.device import Device
-from src.domain.models.user import User
 from src.domain.serializers.measure_serializer import MeasureSerializer
 from src.infrastructure.repositories.device_pg_repository import DevicePGRepository
 from src.infrastructure.repositories.measure_pg_repository import MeasurePGRepository
