@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from pymodelio import Attr, PymodelioModel
-from pymodelio.validators import Validator, DatetimeValidator
 
 from src.common import dates
 from src.domain.models.scheduling.scheduler_action import SchedulerAction

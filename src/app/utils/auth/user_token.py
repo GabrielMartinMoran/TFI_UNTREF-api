@@ -1,5 +1,4 @@
 from pymodelio import Attr
-from pymodelio.validators import StringValidator
 
 from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
