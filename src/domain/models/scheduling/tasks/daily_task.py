@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import List
 
-from pymodelio import pymodelio_model, Attribute
+from pymodelio import Attr
 from pymodelio.validators import ListValidator
 
 from src.common import dates
@@ -10,13 +10,12 @@ from src.common.weekday import Weekday
 from src.domain.models.scheduling.tasks.task import Task
 
 
-@pymodelio_model
 class DailyTask(Task):
     """
     A task that is executed in specific days
     On daily tasks, moment is used as time, not datetime
     """
-    _weekdays: Attribute[List[Weekday]](validator=ListValidator(elements_type=Weekday, allow_empty=False))
+    _weekdays: Attr(List[Weekday], validator=ListValidator(elements_type=Weekday, allow_empty=False))
 
     @property
     def weekdays(self) -> List[Weekday]:

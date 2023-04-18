@@ -1,17 +1,15 @@
 from abc import abstractmethod
 from datetime import datetime
 
-from pymodelio import Attribute, pymodelio_model
-from pymodelio.validators import DatetimeValidator
+from pymodelio import Attr, PymodelioModel
 
 from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.jwt_helper import JWTHelper
 from src.common import dates
 
 
-@pymodelio_model
-class Token:
-    _timestamp: Attribute[datetime](validator=DatetimeValidator(), default_factory=dates.now)
+class Token(PymodelioModel):
+    _timestamp: Attr(datetime, default_factory=dates.now)
 
     @property
     def timestamp(self) -> datetime:

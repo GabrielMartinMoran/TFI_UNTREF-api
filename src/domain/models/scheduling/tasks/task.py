@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pymodelio import Attribute, pymodelio_model
+from pymodelio import Attr, PymodelioModel
 from pymodelio.validators import Validator, DatetimeValidator
 
 from src.common import dates
@@ -8,13 +8,12 @@ from src.domain.models.scheduling.scheduler_action import SchedulerAction
 from src.domain.models.scheduling.tasks.task_action import TaskAction
 
 
-@pymodelio_model
-class Task:
+class Task(PymodelioModel):
     """
     A task that is executed just one time
     """
-    _action: Attribute[TaskAction](validator=Validator(expected_type=TaskAction))
-    _moment: Attribute[datetime](validator=DatetimeValidator())
+    _action: Attr(TaskAction)
+    _moment: Attr(datetime)
 
     @property
     def action(self) -> TaskAction:

@@ -1,15 +1,13 @@
-from pymodelio import Attribute, pymodelio_model
-from pymodelio.validators import StringValidator
+from pymodelio import Attr
 
 from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.auth.token import Token
 from src.common import dates
 
 
-@pymodelio_model
 class DeviceToken(Token):
-    _device_id: Attribute[str](validator=StringValidator())
-    _user_id: Attribute[str](validator=StringValidator())
+    _device_id: Attr(str)
+    _user_id: Attr(str)
 
     @property
     def device_id(self) -> str:

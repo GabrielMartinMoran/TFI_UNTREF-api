@@ -38,7 +38,7 @@ def test_is_valid_raises_validation_exception_when_voltage_is_none():
 def test_is_valid_raises_validation_exception_when_voltage_is_lower_than_0():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(voltage=-1.0)
-    assert excinfo.value.args[0] == 'Measure.voltage is lower than 0'
+    assert excinfo.value.args[0] == 'Measure.voltage is less than 0'
 
 
 def test_is_valid_raises_validation_exception_when_current_is_none():
@@ -50,7 +50,7 @@ def test_is_valid_raises_validation_exception_when_current_is_none():
 def test_is_valid_raises_validation_exception_when_current_is_lower_than_0():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(current=-1.0)
-    assert excinfo.value.args[0] == 'Measure.current is lower than 0'
+    assert excinfo.value.args[0] == 'Measure.current is less than 0'
 
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):

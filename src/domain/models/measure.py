@@ -3,16 +3,15 @@ from typing import Union
 from dateutil import parser
 from datetime import datetime
 
-from pymodelio import Attribute, pymodelio_model
-from pymodelio.validators import DatetimeValidator, FloatValidator
+from pymodelio import PymodelioModel, Attr
+from pymodelio.validators import FloatValidator
 
 
-@pymodelio_model
-class Measure:
+class Measure(PymodelioModel):
     _ROUND_DECIMALS = 2
-    _timestamp: Attribute[datetime](validator=DatetimeValidator())
-    _voltage: Attribute[float](validator=FloatValidator(min_value=0))
-    _current: Attribute[float](validator=FloatValidator(min_value=0))
+    _timestamp: Attr(datetime)
+    _voltage: Attr(float, validator=FloatValidator(min_value=0))
+    _current: Attr(float, validator=FloatValidator(min_value=0))
 
     def __before_validate__(self) -> None:
         # Cast timestamp to datetime

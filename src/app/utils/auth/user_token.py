@@ -1,4 +1,4 @@
-from pymodelio import Attribute
+from pymodelio import Attr
 from pymodelio.validators import StringValidator
 
 from src.app.utils.auth.permission_level import PermissionLevel
@@ -8,7 +8,7 @@ from src.domain.models.user import User
 
 
 class UserToken(Token):
-    _user_email: Attribute[str](validator=StringValidator())
+    _user_email: Attr(str)
 
     @property
     def user_email(self) -> str:
