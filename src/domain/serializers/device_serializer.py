@@ -12,5 +12,5 @@ class DeviceSerializer(Serializer):
             'name': model.name,
             'measures': MeasureSerializer.serialize_all(model.measures),
             'active': model.active,
-            'turned_on': model.turned_on
+            'turned_on': model.turned_on,
         }

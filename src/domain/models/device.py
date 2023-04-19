@@ -1,8 +1,10 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from pymodelio import Attr, PymodelioModel
 from pymodelio.validators import StringValidator
 
+from src.common import dates
 from src.common.id_generator import IdGenerator
 from src.domain.models.measure import Measure
 
@@ -11,12 +13,15 @@ class Device(PymodelioModel):
     MIN_NAME_LENGTH = 1
     MAX_NAME_LENGTH = 50
     BLE_ID_LENGTH = 36
+
+    IS_ACTIVE_SECONDS_DELTA = 20
+
     _name: Attr(str, validator=StringValidator(min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH))
     _device_id: Attr(str, validator=StringValidator(fixed_len=BLE_ID_LENGTH),
                      default_factory=IdGenerator.generate_unique_id)
-    _active: Attr(bool, default_factory=lambda: False)
     _turned_on: Attr(bool, default_factory=lambda: False)
     _measures: Attr(List[Measure], default_factory=list)
+    _last_status_update: Attr(Optional[datetime])
 
     def __before_validate__(self) -> None:
         # Force the device_id to be lowercase
@@ -32,7 +37,9 @@ class Device(PymodelioModel):
 
     @property
     def active(self) -> bool:
-        return self._active
+        if self._last_status_update is None:
+            return False
+        return abs((self._last_status_update - dates.now()).total_seconds()) <= self.IS_ACTIVE_SECONDS_DELTA
 
     @property
     def turned_on(self) -> bool:
