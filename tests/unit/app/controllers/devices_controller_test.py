@@ -24,7 +24,7 @@ def test_create_returns_error_response_when_device_is_not_valid():
     }))
     actual = controller.create()
     assert actual.status_code == 400
-    assert actual.body['message'] == 'Device.name must not be None'
+    assert actual.body['message'] == 'Device._name must not be None'
 
 
 def test_create_returns_error_response_when_device_with_same_ble_id_exists_for_user():
@@ -59,7 +59,7 @@ def test_add_measure_returns_error_response_when_measure_is_not_valid():
     }))
     actual = controller.add_measure('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
-    assert actual.body['message'] == 'Measure.current must not be None'
+    assert actual.body['message'] == 'Measure._current must not be None'
 
 
 def test_add_measure_returns_error_response_when_device_is_not_valid_for_user():
@@ -88,7 +88,7 @@ def test_add_measures_returns_error_response_when_any_measure_is_not_valid():
     }]))
     actual = controller.add_measures('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
-    assert actual.body['message'] == 'Measure.current must not be None'
+    assert actual.body['message'] == 'Measure._current must not be None'
 
 
 def test_add_measures_returns_error_response_when_device_is_not_valid_for_user():

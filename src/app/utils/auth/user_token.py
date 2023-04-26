@@ -7,7 +7,7 @@ from src.domain.models.user import User
 
 
 class UserToken(Token):
-    _user_email: Attr(str)
+    _user_email: Attr(str, init_alias='user_email')
 
     @property
     def user_email(self) -> str:

@@ -9,7 +9,7 @@ from src.common import dates
 
 
 class Token(PymodelioModel):
-    _timestamp: Attr(datetime, default_factory=dates.now)
+    _timestamp: Attr(datetime, init_alias='timestamp', default_factory=dates.now)
 
     @property
     def timestamp(self) -> datetime:

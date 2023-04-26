@@ -16,12 +16,12 @@ class Device(PymodelioModel):
 
     IS_ACTIVE_SECONDS_DELTA = 20
 
-    _name: Attr(str, validator=StringValidator(min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH))
-    _device_id: Attr(str, validator=StringValidator(fixed_len=BLE_ID_LENGTH),
+    _name: Attr(str, init_alias='name', validator=StringValidator(min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH))
+    _device_id: Attr(str, init_alias='device_id', validator=StringValidator(fixed_len=BLE_ID_LENGTH),
                      default_factory=IdGenerator.generate_unique_id)
-    _turned_on: Attr(bool, default_factory=lambda: False)
-    _measures: Attr(List[Measure], default_factory=list)
-    _last_status_update: Attr(Optional[datetime])
+    _turned_on: Attr(bool, init_alias='turned_on', default_factory=lambda: False)
+    _measures: Attr(List[Measure], init_alias='measures', default_factory=list)
+    _last_status_update: Attr(Optional[datetime], init_alias='last_status_update')  # noqa: F821
 
     def __before_validate__(self) -> None:
         # Force the device_id to be lowercase

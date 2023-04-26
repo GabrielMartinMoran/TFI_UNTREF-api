@@ -15,7 +15,8 @@ class DailyTask(Task):
     A task that is executed in specific days
     On daily tasks, moment is used as time, not datetime
     """
-    _weekdays: Attr(List[Weekday], validator=ListValidator(elements_type=Weekday, allow_empty=False))
+    _weekdays: Attr(List[Weekday], init_alias='weekdays',
+                    validator=ListValidator(elements_type=Weekday, allow_empty=False))
 
     @property
     def weekdays(self) -> List[Weekday]:

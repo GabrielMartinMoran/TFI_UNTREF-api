@@ -41,7 +41,7 @@ def test_set_scheduling_tasks_returns_error_response_when_a_task_is_not_valid():
     ]))
     actual = controller.set_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
-    assert actual.body['message'] == 'Task.moment must not be None'
+    assert actual.body['message'] == 'Task._moment must not be None'
 
 
 def test_get_scheduling_tasks_returns_error_response_when_user_does_not_have_provided_device():

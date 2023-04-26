@@ -6,8 +6,8 @@ from src.common import dates
 
 
 class DeviceToken(Token):
-    _device_id: Attr(str)
-    _user_id: Attr(str)
+    _device_id: Attr(str, init_alias='device_id')
+    _user_id: Attr(str, init_alias='user_id')
 
     @property
     def device_id(self) -> str:

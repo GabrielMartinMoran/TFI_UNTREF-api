@@ -9,9 +9,9 @@ from pymodelio.validators import FloatValidator
 
 class Measure(PymodelioModel):
     _ROUND_DECIMALS = 2
-    _timestamp: Attr(datetime)
-    _voltage: Attr(float, validator=FloatValidator(min_value=0))
-    _current: Attr(float, validator=FloatValidator(min_value=0))
+    _timestamp: Attr(datetime, init_alias='timestamp')
+    _voltage: Attr(float, init_alias='voltage', validator=FloatValidator(min_value=0))
+    _current: Attr(float, init_alias='current', validator=FloatValidator(min_value=0))
 
     def __before_validate__(self) -> None:
         # Cast timestamp to datetime

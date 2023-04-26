@@ -11,8 +11,8 @@ class Task(PymodelioModel):
     """
     A task that is executed just one time
     """
-    _action: Attr(TaskAction)
-    _moment: Attr(datetime)
+    _action: Attr(TaskAction, init_alias='action')
+    _moment: Attr(datetime, init_alias='moment')
 
     @property
     def action(self) -> TaskAction:
