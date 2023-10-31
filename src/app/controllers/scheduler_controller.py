@@ -1,4 +1,7 @@
-from src.app.utils.auth_info import AuthInfo
+from typing import Optional
+
+from src.app.utils.auth.permission_level import PermissionLevel
+from src.app.utils.auth.token import Token
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_not_found_exception import DeviceNotFoundException
 from pymodelio.exceptions.model_validation_exception import ModelValidationException
@@ -18,8 +21,8 @@ from src.infrastructure.repositories.device_scheduler_pg_repository import Devic
 
 class SchedulerController(BaseController):
 
-    def __init__(self, request: Request, auth_info: AuthInfo = None) -> None:
-        super().__init__(request, auth_info)
+    def __init__(self, request: Request, token: Optional[Token] = None) -> None:
+        super().__init__(request, token)
         self.device_repository = DevicePGRepository()
         self.device_scheduler_repository = DeviceSchedulerPGRepository()
 
@@ -56,14 +59,21 @@ class SchedulerController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while getting device scheduling')
 
-    @route(http_methods.GET)
+    @route(http_methods.GET, min_permission_level=PermissionLevel.DEVICE)
     def get_next_scheduling_action(self, device_id: str) -> Response:
         try:
+            self._validate_device_permission(device_id)
             retriever = DeviceSchedulerRetriever(self.device_repository, self.device_scheduler_repository)
             scheduler_action = retriever.get_next_scheduling_action(device_id, self.get_authenticated_user_id())
+            use_epochs = self.get_query_param('use_epochs', 'false').lower() == 'true'
             return Response.success(
-                SchedulerActionSerializer.serialize(scheduler_action) if scheduler_action is not None else {}
+                SchedulerActionSerializer.serialize(
+                    scheduler_action,
+                    use_epochs=use_epochs
+                ) if scheduler_action is not None else {}
             )
+        except PermissionError:
+            return Response.unauthorized()
         except ModelValidationException as e:
             Logger.error(e)
             return Response.bad_request(validation_errors=e.validation_errors)

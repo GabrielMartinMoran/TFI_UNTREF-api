@@ -41,7 +41,7 @@ def test_set_scheduling_tasks_returns_error_response_when_a_task_is_not_valid():
     ]))
     actual = controller.set_scheduling_tasks('5c7b5ffc-90e7-1b85-f041-0595c912c905')
     assert actual.status_code == 400
-    assert actual.body['message'] == 'Task.moment must not be None'
+    assert actual.body['message'] == 'Task._moment must not be None'
 
 
 def test_get_scheduling_tasks_returns_error_response_when_user_does_not_have_provided_device():
@@ -74,7 +74,7 @@ def test_get_scheduling_tasks_returns_a_list_of_scheduled_tasks():
 
 @patch('src.common.dates.now', new=lambda: dates.to_datetime('2022-06-22T00:00:00+00:00'))
 def test_get_next_scheduling_action_returns_next_scheduler_action(*args):
-    controller = SchedulerController(None)
+    controller = SchedulerController(Request.from_body({}))
     device_tasks = [
         {
             'action': 'TURN_DEVICE_ON',

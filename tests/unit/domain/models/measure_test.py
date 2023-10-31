@@ -26,31 +26,31 @@ def measure_json():
 def test_is_valid_raises_validation_exception_when_timestamp_is_none():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(timestamp=None)
-    assert excinfo.value.args[0] == 'Measure.timestamp must not be None'
+    assert excinfo.value.args[0] == 'Measure._timestamp must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_voltage_is_none():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(voltage=None)
-    assert excinfo.value.args[0] == 'Measure.voltage must not be None'
+    assert excinfo.value.args[0] == 'Measure._voltage must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_voltage_is_lower_than_0():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(voltage=-1.0)
-    assert excinfo.value.args[0] == 'Measure.voltage is lower than 0'
+    assert excinfo.value.args[0] == 'Measure._voltage is less than 0'
 
 
 def test_is_valid_raises_validation_exception_when_current_is_none():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(current=None)
-    assert excinfo.value.args[0] == 'Measure.current must not be None'
+    assert excinfo.value.args[0] == 'Measure._current must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_current_is_lower_than_0():
     with pytest.raises(ModelValidationException) as excinfo:
         MeasureStub(current=-1.0)
-    assert excinfo.value.args[0] == 'Measure.current is lower than 0'
+    assert excinfo.value.args[0] == 'Measure._current is less than 0'
 
 
 def test_from_dict_instantiates_measure_with_provided_dict(measure_json):

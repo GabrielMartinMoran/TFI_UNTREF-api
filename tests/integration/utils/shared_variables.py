@@ -1,5 +1,8 @@
-from src.app.utils.auth_info import AuthInfo
+from typing import Optional
+
+from src.app.utils.auth.user_token import UserToken
 from src.app.utils.http.response import Response
 
-last_response: Response = None
-logged_auth_info: AuthInfo = None
+last_response: Optional[Response] = None
+token: Optional[UserToken] = None
+user_id: Optional[str] = None

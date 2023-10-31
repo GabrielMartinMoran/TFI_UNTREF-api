@@ -1,3 +1,4 @@
+import random
 from datetime import timedelta
 
 from pytest_bdd import given, then, when, parsers
@@ -6,7 +7,6 @@ from src.app.controllers.devices_controller import DevicesController
 from src.app.utils.http.request import Request
 from src.common import dates
 from src.domain.models.device import Device
-from src.domain.models.user import User
 from src.domain.serializers.measure_serializer import MeasureSerializer
 from src.infrastructure.repositories.device_pg_repository import DevicePGRepository
 from src.infrastructure.repositories.measure_pg_repository import MeasurePGRepository
@@ -18,9 +18,8 @@ from tests.model_stubs.measure_stub import MeasureStub
 def device_exists_for_logged_user(device_id: str):
     device_repository = DevicePGRepository()
     device = Device(name=device_id, device_id=device_id)
-    user_id = User.email_to_id(shared_variables.logged_auth_info.user_email)
-    if not device_repository.exists_for_user(device_id, user_id):
-        device_repository.create(device, user_id)
+    if not device_repository.exists_for_user(device_id, shared_variables.user_id):
+        device_repository.create(device, shared_variables.user_id)
 
 
 @given(parsers.cfparse('device with id \'{device_id}\' has recent measures'))
@@ -33,18 +32,24 @@ def device_has_recent_measures(device_id: str):
         minutes_interval += 0.5
 
 
+@given(parsers.cfparse('the state for device with id \'{device_id}\' is turned on'))
+def device_is_turned_on(device_id: str):
+    device_repository = DevicePGRepository()
+    device_repository.update_state(device_id, shared_variables.user_id, True, dates.now())
+
+
 @when(parsers.cfparse('user tries to create device with name \'{device_name}\''))
 def try_user_login(device_name: str):
     controller = DevicesController(request=Request.from_body({
         'name': device_name
-    }), auth_info=shared_variables.logged_auth_info)
+    }), token=shared_variables.token)
     shared_variables.last_response = controller.create()
 
 
 @when(parsers.cfparse('user tries to add a measure for device with id \'{device_id}\''))
 def try_add_valid_measure(device_id: str):
     controller = DevicesController(request=Request.from_body(MeasureSerializer.serialize(MeasureStub())),
-                                   auth_info=shared_variables.logged_auth_info)
+                                   token=shared_variables.token)
     shared_variables.last_response = controller.add_measure(device_id)
 
 
@@ -56,22 +61,59 @@ def try_add_invalid_measure(device_id: str):
             'current': -5.0
         }
     }
-    controller = DevicesController(request=Request.from_body(measure_dict), auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=Request.from_body(measure_dict), token=shared_variables.token)
     shared_variables.last_response = controller.add_measure(device_id)
+
+
+@when(parsers.cfparse('user tries to add invalid measures for device with id \'{device_id}\''))
+def try_add_invalid_measures(device_id: str):
+    measure_dict = {
+        **MeasureSerializer.serialize(MeasureStub()), **{
+            'voltage': -200.0,
+            'current': -5.0
+        }
+    }
+    controller = DevicesController(request=Request.from_body([measure_dict]),
+                                   token=shared_variables.token)
+    shared_variables.last_response = controller.add_measures(device_id)
 
 
 @when(parsers.cfparse('user tries to get measures for device with id \'{device_id}\''))
 def try_get_measures_for_device(device_id: str):
-    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=None, token=shared_variables.token)
     minutes_interval = 10
     shared_variables.last_response = controller.get_measures(device_id, minutes_interval)
 
 
 @when(parsers.cfparse('user tries to get measures for all devices'))
 def try_get_measures_for_all_devices():
-    controller = DevicesController(request=None, auth_info=shared_variables.logged_auth_info)
+    controller = DevicesController(request=None, token=shared_variables.token)
     minutes_interval = 10
     shared_variables.last_response = controller.get_measures_for_all_devices(minutes_interval)
+
+
+@when(parsers.cfparse('user tries to add measures for device with id \'{device_id}\''))
+def try_add_valid_measures(device_id: str):
+    controller = DevicesController(
+        request=Request.from_body(
+            MeasureSerializer.serialize_all([MeasureStub() for x in range(random.randint(1, 10))])),
+        token=shared_variables.token)
+    shared_variables.last_response = controller.add_measures(device_id)
+
+
+@when(parsers.cfparse('user tries to update the device state as turned_on for device with id \'{device_id}\''))
+def try_update_device_state_to_turned_on(device_id: str):
+    controller = DevicesController(
+        request=Request.from_body({'turned_on': True}),
+        token=shared_variables.token
+    )
+    shared_variables.last_response = controller.update_state(device_id)
+
+
+@when(parsers.cfparse('user tries to get the device state for device with id \'{device_id}\''))
+def try_get_device_state(device_id: str):
+    controller = DevicesController(request=Request.from_body({}), token=shared_variables.token)
+    shared_variables.last_response = controller.get_state(device_id)
 
 
 @then('device is created successfully')
@@ -81,6 +123,11 @@ def device_created_successfully():
 
 @then('measure is added successfully')
 def measure_added_successfully():
+    assert shared_variables.last_response.status_code == 201
+
+
+@then('measures are added successfully')
+def measures_added_successfully():
     assert shared_variables.last_response.status_code == 201
 
 
@@ -98,3 +145,14 @@ def summarized_measures_returned_successfully():
         assert 'voltage' in measure
         assert 'power' in measure
         assert 'timestamp' in measure
+
+
+@then('device state is updated successfully')
+def device_state_updated_successfully():
+    assert shared_variables.last_response.status_code == 200
+
+
+@then('device state is turned on')
+def device_state_is_turned_on():
+    assert shared_variables.last_response.status_code == 200
+    assert shared_variables.last_response.body == {'turned_on': True}

@@ -1,5 +1,6 @@
 import pytest
 from src.app.routing.controller_route import ControllerRoute
+from src.app.utils.auth.permission_level import PermissionLevel
 
 
 class MockedController:
@@ -13,7 +14,7 @@ def controller_route():
 
 def test_add_method_adds_method_route_to_methods_when_called(controller_route):
     expected = 'controller_method'
-    controller_route.add_method(expected, 'POST', 'method_alias', False)
+    controller_route.add_method(expected, 'POST', 'method_alias', PermissionLevel.PUBLIC)
     assert 1 == len(controller_route.methods)
     assert expected == controller_route.methods[0].method_name
 

@@ -1,6 +1,8 @@
 import json
+from datetime import datetime
 from typing import List
 
+from src.common import dates
 from src.domain.mappers.device_mapper import DeviceMapper
 from src.domain.mappers.scheduling.tasks.task_mapper import TaskMapper
 from src.domain.models.device import Device
@@ -12,12 +14,11 @@ from src.infrastructure.repositories.postgres_repository import PostgresReposito
 
 class DevicePGRepository(PostgresRepository, DeviceRepository):
 
-    def create(self, device: Device, user_id: int) -> None:
-        self._execute_query(f"INSERT INTO Devices (device_id, user_id, name, active, turned_on) VALUES "
-                            f"('{device.device_id}', '{user_id}', '{device.name}', {device.active}, "
-                            f"{device.turned_on})")
+    def create(self, device: Device, user_id: str) -> None:
+        self._execute_query(f"INSERT INTO Devices (device_id, user_id, name, turned_on) VALUES "
+                            f"('{device.device_id}', '{user_id}', '{device.name}', {device.turned_on})")
 
-    def exists_for_user(self, device_id: str, user_id: int) -> bool:
+    def exists_for_user(self, device_id: str, user_id: str) -> bool:
         res = self._execute_query(f"SELECT COUNT(device_id) FROM Devices WHERE device_id = '{device_id}' AND "
                                   f"user_id = '{user_id}'")
         return res.first()['count'] > 0
@@ -49,3 +50,18 @@ class DevicePGRepository(PostgresRepository, DeviceRepository):
         if not res.records:
             return []
         return TaskMapper.map_all(res.first()['tasks'])
+
+    def update_state(self, device_id: str, user_id: str, turned_on: bool, last_status_update: datetime) -> None:
+        self._execute_query(
+            f"UPDATE Devices SET turned_on={str(turned_on).lower()},"
+            f" last_status_update='{dates.to_utc_isostring(last_status_update)}'"
+            f" WHERE device_id='{device_id}' AND user_id = '{user_id}'"
+        )
+
+    def get_state(self, device_id: str, user_id: str) -> bool:
+        res = self._execute_query(
+            f"SELECT turned_on FROM Devices WHERE device_id = '{device_id}' AND user_id = '{user_id}'"
+        )
+        if not res.records:
+            return False
+        return res.first()['turned_on']

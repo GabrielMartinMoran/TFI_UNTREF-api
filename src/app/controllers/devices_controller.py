@@ -1,4 +1,7 @@
-from src.app.utils.auth_info import AuthInfo
+from typing import Optional
+
+from src.app.utils.auth.permission_level import PermissionLevel
+from src.app.utils.auth.token import Token
 from src.app.utils.http.request import Request
 from src.domain.exceptions.device_already_existent_exception import DeviceAlreadyExistentException
 from pymodelio.exceptions.model_validation_exception import ModelValidationException
@@ -10,6 +13,8 @@ from src.domain.serializers.measure_serializer import MeasureSerializer
 from src.domain.services.devices.device_creator import DeviceCreator
 from src.domain.services.devices.device_measure_aggregator import DeviceMeasureAggregator
 from src.domain.services.devices.device_measure_summarizer import DeviceMeasureSummarizer
+from src.domain.services.devices.device_state.device_state_modifier import DeviceStateModifier
+from src.domain.services.devices.device_state.device_state_retriever import DeviceStateRetriever
 from src.domain.services.devices.devices_obtainer import DevicesRetriever
 from src.app.utils.http.response import Response
 from src.app.utils.http.route import route
@@ -22,8 +27,8 @@ from src.infrastructure.repositories.measure_pg_repository import MeasurePGRepos
 
 class DevicesController(BaseController):
 
-    def __init__(self, request: Request, auth_info: AuthInfo = None) -> None:
-        super().__init__(request, auth_info)
+    def __init__(self, request: Request, token: Optional[Token] = None) -> None:
+        super().__init__(request, token)
         self.device_repository = DevicePGRepository()
         self.measure_repository = MeasurePGRepository()
 
@@ -42,13 +47,16 @@ class DevicesController(BaseController):
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the device')
 
-    @route(http_methods.POST)
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
     def add_measure(self, device_id: str) -> Response:
         try:
+            self._validate_device_permission(device_id)
             measure = MeasureMapper.map(self.get_json_body())
             device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
             device_measure_aggregator.add_measure_to_device(device_id, self.get_authenticated_user_id(), measure)
             return Response.created_successfully()
+        except PermissionError:
+            return Response.unauthorized()
         except ModelValidationException as e:
             return Response.bad_request(message=str(e))
         except UnregisteredDeviceException:
@@ -56,6 +64,24 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while creating the measure')
+
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
+    def add_measures(self, device_id: str) -> Response:
+        try:
+            self._validate_device_permission(device_id)
+            measures = MeasureMapper.map_all(self.get_json_body())
+            device_measure_aggregator = DeviceMeasureAggregator(self.device_repository, self.measure_repository)
+            device_measure_aggregator.add_measures_to_device(device_id, self.get_authenticated_user_id(), measures)
+            return Response.created_successfully()
+        except PermissionError:
+            return Response.unauthorized()
+        except ModelValidationException as e:
+            return Response.bad_request(message=str(e))
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while creating the measures')
 
     @route(http_methods.GET)
     def get_measures(self, device_id: str, time_interval: int) -> Response:
@@ -88,3 +114,36 @@ class DevicesController(BaseController):
         except Exception as e:
             Logger.error(e)
             return Response.server_error('An error has occurred while trying to obtain measures')
+
+    @route(http_methods.POST, min_permission_level=PermissionLevel.DEVICE)
+    def update_state(self, device_id: str) -> Response:
+        try:
+            self._validate_device_permission(device_id)
+            turned_on = self.get_json_body().get('turned_on')
+            if not isinstance(turned_on, bool):
+                return Response.bad_request(message='turned_on must be a valid boolean')
+            device_state_updater = DeviceStateModifier(self.device_repository)
+            device_state_updater.update(device_id, self.get_authenticated_user_id(), turned_on)
+            return Response.success()
+        except PermissionError:
+            return Response.unauthorized()
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while updating the state')
+
+    @route(http_methods.GET, min_permission_level=PermissionLevel.DEVICE)
+    def get_state(self, device_id: str) -> Response:
+        try:
+            self._validate_device_permission(device_id)
+            device_state_retriever = DeviceStateRetriever(self.device_repository)
+            turned_on = device_state_retriever.get(device_id, self.get_authenticated_user_id())
+            return Response.success({'turned_on': turned_on})
+        except PermissionError:
+            return Response.unauthorized()
+        except UnregisteredDeviceException:
+            return Response.bad_request(message='Device identifier is not valid for logged user')
+        except Exception as e:
+            Logger.error(e)
+            return Response.server_error('An error has occurred while getting the state')

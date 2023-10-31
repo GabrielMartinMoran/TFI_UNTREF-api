@@ -37,25 +37,25 @@ def device_json():
 def test_is_valid_raises_validation_exception_when_name_is_null():
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name=None)
-    assert excinfo.value.args[0] == 'Device.name must not be None'
+    assert excinfo.value.args[0] == 'Device._name must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_name_len_greater_than_32(device):
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name='A' * 51)
-    assert excinfo.value.args[0] == 'Device.name is longer than 50'
+    assert excinfo.value.args[0] == 'Device._name is longer than 50'
 
 
 def test_is_valid_raises_validation_exception_when_name_len_zero(device):
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(name='')
-    assert excinfo.value.args[0] == 'Device.name is shorter than 1'
+    assert excinfo.value.args[0] == 'Device._name is shorter than 1'
 
 
 def test_is_valid_raises_validation_exception_when_id_is_invalid():
     with pytest.raises(ModelValidationException) as excinfo:
         DeviceStub(device_id='invalid_device_id')
-    assert excinfo.value.args[0] == 'Device.device_id length is different than 36'
+    assert excinfo.value.args[0] == 'Device._device_id length is different than 36'
 
 
 """

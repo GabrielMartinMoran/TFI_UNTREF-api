@@ -17,43 +17,43 @@ def user_json():
 def test_is_valid_raises_validation_exception_when_username_is_none():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username=None)
-    assert excinfo.value.args[0] == 'User.username must not be None'
+    assert excinfo.value.args[0] == 'User._username must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_username_is_longer_than_32():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username='A' * 33)
-    assert excinfo.value.args[0] == 'User.username is longer than 32'
+    assert excinfo.value.args[0] == 'User._username is longer than 32'
 
 
 def test_is_valid_raises_validation_exception_when_username_len_is_lower_than_3():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(username='AA')
-    assert excinfo.value.args[0] == 'User.username is shorter than 3'
+    assert excinfo.value.args[0] == 'User._username is shorter than 3'
 
 
 def test_is_valid_raises_validation_exception_when_email_is_null():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(email=None)
-    assert excinfo.value.args[0] == 'User.email must not be None'
+    assert excinfo.value.args[0] == 'User._email must not be None'
 
 
 def test_is_valid_raises_validation_exception_when_email_is_invalid():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(email='invalidemail@invalid')
-    assert excinfo.value.args[0] == 'User.email is not a valid email address'
+    assert excinfo.value.args[0] == 'User._email is not a valid email address'
 
 
 def test_is_valid_raises_validation_exception_when_password_is_invalid():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(password='invalidpassword')
-    assert excinfo.value.args[0] == 'User.password is not valid'
+    assert excinfo.value.args[0] == 'User._password is not valid'
 
 
 def test_is_valid_with_no_hashed_password_raises_validation_exception():
     with pytest.raises(ModelValidationException) as excinfo:
         UserStub(password=None, hashed_password=None)
-    assert excinfo.value.args[0] == 'User.hashed_password is not valid'
+    assert excinfo.value.args[0] == 'User._hashed_password is not valid'
 
 
 def test_from_json_set_hashed_password_with_password_hashed_when_password_is_provided(user_json):

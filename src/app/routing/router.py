@@ -4,18 +4,19 @@ import pkgutil
 from pydoc import locate
 from flask import make_response
 
-from ..controllers.base_controller import BaseController
-from ..utils import global_variables, console_colors
+from src.app.controllers.base_controller import BaseController
+from src.app.utils import global_variables, console_colors
+from src.app.utils.auth.permission_level import PermissionLevel
 from src.app.utils.logging.logger import Logger
-from .controller_route import ControllerRoute
-from .method_route import MethodRoute
-from .token_parser import TokenParser
-from .cors_solver import CORSSolver
+from src.app.routing.controller_route import ControllerRoute
+from src.app.routing.method_route import MethodRoute
+from src.app.routing.token_parser import TokenParser
+from src.app.routing.cors_solver import CORSSolver
 from src.app.utils.http.response import Response
 
 import src.app.controllers as controllers_module
-from ..utils.auth_info import AuthInfo
-from ..utils.http.request import Request
+from src.app.utils.auth.token import Token
+from src.app.utils.http.request import Request
 
 EXCLUDED_CONTROLLERS = ['base_controller']
 
@@ -63,16 +64,16 @@ class Router:
         if routed_method is None:
             return self.error_response('Not found', 404)
 
-        # Si requiere auth_info
+        # If a token is required
         token_parser = TokenParser(request)
-        if routed_method.auth_required and not token_parser.valid_token():
+        if not self._has_permission(routed_method.min_permission_level, token_parser.token):
             return self.error_response('Unauthorized', 401)
 
         params = []
         if len(split_path) > 2:
             params = split_path[2:]
         try:
-            return self._call_controller_method(routed_method, request, token_parser.auth_info, *params)
+            return self._call_controller_method(routed_method, request, token_parser.token, *params)
         except TypeError as ex:
             print(
                 F'{console_colors.ERROR}An error has ocurred with message:'
@@ -108,7 +109,7 @@ class Router:
             for method in self.http_methods:
                 if method['class_name'] == controller_route.controller_name():
                     controller_route.add_method(method['method_name'], method['type'], method['alias'],
-                                                method['auth_required'])
+                                                method['min_permission_level'])
         Logger.debug("Mapeo de rutas finalizado...")
 
     @classmethod
@@ -150,12 +151,19 @@ class Router:
         return None
 
     @classmethod
-    def _call_controller_method(cls, method_route: MethodRoute, request, auth_info: AuthInfo, *method_params):
-        internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {})
+    def _call_controller_method(cls, method_route: MethodRoute, request, token: Token, *method_params):
+        internal_request = Request(request.method, request.path, request.json if len(request.data) > 0 else {},
+                                   dict(request.args))
         controller_instance = method_route.controller_class(**{
             'request': internal_request,
-            'auth_info': auth_info
+            'token': token
         })
         method = getattr(controller_instance, method_route.method_name)
         result: Response = method(*method_params)
         return result.jsonify()
+
+    @classmethod
+    def _has_permission(cls, min_permission_level: PermissionLevel, token: Optional[Token]) -> bool:
+        if token is None:
+            return min_permission_level == PermissionLevel.PUBLIC
+        return token.permission_level.value >= min_permission_level.value
